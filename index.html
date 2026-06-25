@@ -21,24 +21,29 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 .screen{display:none;position:fixed;top:0;left:0;right:0;bottom:60px;overflow-y:auto}
 .screen.active{display:flex;flex-direction:column}
 
-/* SCAN SCREEN */
-#scan-screen{background:var(--bg)}
-#scan-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:24px}
+/* SCAN SCREEN — fixed layout, never elongates */
+#scan-screen{background:var(--bg);overflow:hidden}
+#scan-main{
+  flex:1;display:grid;
+  grid-template-rows:1fr auto auto auto;
+  align-items:center;
+  padding:16px;gap:12px;
+  max-width:480px;margin:0 auto;width:100%;
+}
 
-/* big scan icon area */
+/* scan icon */
 #scan-icon-wrap{
-  width:200px;height:200px;border-radius:20px;
+  border-radius:20px;
   background:var(--surface);border:2px dashed var(--border);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
   transition:all .2s;position:relative;overflow:hidden;
+  min-height:140px;
 }
 #scan-icon-wrap.active{border-color:var(--accent);border-style:solid;background:#EBF3FF}
-#scan-icon-wrap svg{width:64px;height:64px;color:var(--border);transition:color .2s}
+#scan-icon-wrap svg{width:52px;height:52px;color:var(--border);transition:color .2s}
 #scan-icon-wrap.active svg{color:var(--accent)}
-#scan-ready-text{font-size:13px;color:var(--muted);font-weight:500;text-align:center}
+#scan-ready-text{font-size:12px;color:var(--muted);font-weight:500;text-align:center;line-height:1.4}
 #scan-icon-wrap.active #scan-ready-text{color:var(--accent)}
-
-/* pulse ring when active */
 #scan-icon-wrap.active::before{
   content:'';position:absolute;inset:-2px;border-radius:22px;
   border:3px solid var(--accent);opacity:0;
@@ -46,40 +51,44 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 }
 @keyframes ring{0%{opacity:.6;transform:scale(1)}100%{opacity:0;transform:scale(1.05)}}
 
+/* last scan status — single line, truncated */
+#scan-status{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;width:100%;}
+#scan-status-label{font-size:11px;color:var(--muted);margin-bottom:2px}
+#last-scan{font-size:12px;font-weight:600;color:var(--text);font-family:'JetBrains Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* model summary table — fixed height scrollable, never grows page */
+#chips-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;width:100%}
+#chips-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border)}
+#chips-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+#chips-total{font-size:11px;font-weight:700;color:var(--accent)}
+#model-chips{max-height:90px;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:4px}
+.chip{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:7px;font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.chip-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip-count{font-size:12px;font-weight:700;flex-shrink:0}
+
+/* hidden scanner input */
+#scanner-input{position:absolute;opacity:0;width:1px;height:1px;top:-999px;}
+
+/* manual entry */
+#manual-section{width:100%}
+#manual-label{font-size:11px;color:var(--muted);margin-bottom:6px}
+#manual-row{display:flex;gap:8px}
+#manual-inp{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;padding:8px 12px;outline:none}
+#manual-inp:focus{border-color:var(--accent)}
+#manual-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:8px 16px;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap}
+
 /* flash overlay */
 #flash{
   position:fixed;inset:0;bottom:60px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   background:rgba(255,255,255,.97);
-  opacity:0;pointer-events:none;transition:opacity .15s;z-index:50;gap:8px;
+  opacity:0;pointer-events:none;transition:opacity .15s;z-index:50;gap:6px;
 }
 #flash.show{opacity:1}
-#flash-model{font-family:'JetBrains Mono',monospace;font-size:42px;font-weight:700;color:var(--accent);letter-spacing:2px;text-align:center;padding:0 24px;line-height:1.1}
+#flash-model{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:700;color:var(--accent);letter-spacing:2px;text-align:center;padding:0 24px;line-height:1.2;max-width:100%;word-break:break-all}
 #flash-time{font-size:13px;color:var(--muted)}
 #flash-ok{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:14px;font-weight:600;color:var(--green)}
 #flash-ok svg{width:20px;height:20px}
-
-/* status bar */
-#scan-status{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;width:100%;max-width:320px;text-align:center}
-#scan-status-label{font-size:12px;color:var(--muted);margin-bottom:2px}
-#last-scan{font-size:13px;font-weight:600;color:var(--text);font-family:'JetBrains Mono',monospace;min-height:20px}
-
-/* chips */
-#model-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:360px}
-.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;font-family:'JetBrains Mono',monospace}
-
-/* hidden input trap */
-#scanner-input{
-  position:absolute;opacity:0;width:1px;height:1px;top:-999px;
-}
-
-/* manual entry */
-#manual-section{width:100%;max-width:320px}
-#manual-label{font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px}
-#manual-row{display:flex;gap:8px}
-#manual-inp{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;padding:9px 12px;outline:none}
-#manual-inp:focus{border-color:var(--accent)}
-#manual-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:9px 16px;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap}
 
 /* TODAY */
 #today-screen{background:var(--bg)}
@@ -168,7 +177,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
       <div id="last-scan">—</div>
     </div>
 
-    <div id="model-chips"></div>
+    <div id="chips-wrap">
+      <div id="chips-header">
+        <span id="chips-title">Models today</span>
+        <span id="chips-total">0 scans</span>
+      </div>
+      <div id="model-chips"></div>
+    </div>
 
     <div id="manual-section">
       <div id="manual-label">Or enter manually</div>
@@ -422,13 +437,27 @@ document.getElementById('manual-inp').addEventListener('keydown',e=>{
 // ── SCAN BAR ──
 function updateScanBar(){
   const today=todayScans();
-  const last=today.filter(s=>s.status!=='VOID').pop();
+  const active=today.filter(s=>s.status!=='VOID');
+  const last=active[active.length-1];
   document.getElementById('last-scan').textContent=last?`${last.model}  ·  ${last.time}`:'—';
+  // count per model
   const counts={};
-  today.filter(s=>s.status!=='VOID').forEach(s=>{counts[s.model]=(counts[s.model]||0)+1;});
-  document.getElementById('model-chips').innerHTML=Object.entries(counts).map(([m,c])=>{
+  active.forEach(s=>{counts[s.model]=(counts[s.model]||0)+1;});
+  const total=active.length;
+  document.getElementById('chips-total').textContent=`${total} scan${total!==1?'s':''}`;
+  const entries=Object.entries(counts);
+  if(entries.length===0){
+    document.getElementById('model-chips').innerHTML='<div style="padding:8px 4px;font-size:11px;color:var(--muted);text-align:center">No scans yet</div>';
+    return;
+  }
+  // sort by count descending, show count + truncated label
+  entries.sort((a,b)=>b[1]-a[1]);
+  document.getElementById('model-chips').innerHTML=entries.map(([m,c])=>{
     const col=colorFor(m);
-    return `<span class="chip" style="background:${col}18;color:${col};border:1px solid ${col}33">${m} ×${c}</span>`;
+    return `<div class="chip" style="background:${col}12;border:1px solid ${col}30">
+      <span class="chip-count" style="color:${col}">${c}×</span>
+      <span class="chip-label" style="color:${col}">${m}</span>
+    </div>`;
   }).join('');
 }
 
