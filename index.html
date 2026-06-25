@@ -61,12 +61,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 #chips-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border)}
 #chips-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
 #chips-total{font-size:11px;font-weight:700;color:var(--accent)}
-#model-chips{padding:10px;display:flex;flex-wrap:wrap;gap:8px;max-height:130px;overflow-y:auto}
+#model-chips{padding:10px;display:flex;flex-wrap:wrap;gap:10px;max-height:200px;overflow-y:auto}
 .chip{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:8px 12px;border-radius:8px;font-family:'JetBrains Mono',monospace;
-  min-width:72px;text-align:center;border-width:2px;border-style:solid;}
-.chip-label{font-size:14px;font-weight:700;line-height:1.2}
-.chip-count{font-size:11px;font-weight:500;margin-top:2px;opacity:.8}
+  padding:10px 14px;border-radius:10px;font-family:'JetBrains Mono',monospace;
+  min-width:88px;text-align:center;border-width:2px;border-style:solid;cursor:default;}
+.chip-sebangor{font-size:15px;font-weight:700;line-height:1.2}
+.chip-kanban{font-size:13px;font-weight:600;margin-top:2px;opacity:.85}
+.chip-count{font-size:11px;font-weight:500;margin-top:4px;opacity:.7}
 
 /* hidden scanner input */
 #scanner-input{position:absolute;opacity:0;width:1px;height:1px;top:-999px;}
@@ -342,8 +343,11 @@ function load(){
   }catch(e){}
 }
 function colorFor(model){
-  if(!S.modelColors[model]){S.modelColors[model]=MODEL_COLORS[S.colorIdx%MODEL_COLORS.length];S.colorIdx++;save();}
-  return S.modelColors[model];
+  // Key colour by sebangor + kanban (first two parts before |)
+  const parts = model.split('|');
+  const key = parts.length>=2 ? parts[0].trim()+'|'+parts[1].trim() : parts[0].trim();
+  if(!S.modelColors[key]){S.modelColors[key]=MODEL_COLORS[S.colorIdx%MODEL_COLORS.length];S.colorIdx++;save();}
+  return S.modelColors[key];
 }
 function todayStr(){return new Date().toISOString().slice(0,10);}
 function todayScans(){return S.scans.filter(s=>s.date===todayStr());}
@@ -445,7 +449,12 @@ function updateScanBar(){
   document.getElementById('last-scan').textContent=last?`${lastLabel}  ·  ${last.time}`:'—';
   // count per model
   const counts={};
-  active.forEach(s=>{counts[s.model]=(counts[s.model]||0)+1;});
+  active.forEach(s=>{
+    // Group by sebangor + kanban number (first two segments)
+    const parts = s.model.split('|');
+    const key = parts.length>=2 ? parts[0].trim()+'|'+parts[1].trim() : parts[0].trim();
+    counts[key]=(counts[key]||0)+1;
+  });
   const total=active.length;
   document.getElementById('chips-total').textContent=`${total} scan${total!==1?'s':''}`;
   const entries=Object.entries(counts);
@@ -457,10 +466,12 @@ function updateScanBar(){
   entries.sort((a,b)=>b[1]-a[1]);
   document.getElementById('model-chips').innerHTML=entries.map(([m,c])=>{
     const col=colorFor(m);
-    // Extract sebangor number: everything before first | or use full string
-    const label = m.includes('|') ? m.split('|')[0].trim() : m;
-    return `<div class="chip" style="background:${col}18;border-color:${col}55;color:${col}">
-      <span class="chip-label">${label}</span>
+    const parts = m.split('|');
+    const sebangor = parts[0].trim();
+    const kanban = parts.length>1 ? parts[1].trim() : '';
+    return `<div class="chip" style="background:${col}18;border-color:${col}66;color:${col}">
+      <span class="chip-sebangor">${sebangor}</span>
+      ${kanban?`<span class="chip-kanban">| ${kanban}</span>`:''}
       <span class="chip-count">${c} scan${c!==1?'s':''}</span>
     </div>`;
   }).join('');
@@ -532,15 +543,9 @@ function voidScan(id){
 async function postToSheet(entry){
   if(!S.gsUrl)return;
   try{
-    // Use URLSearchParams — sends as application/x-www-form-urlencoded
-    // This avoids CORS preflight entirely, Google Apps Script accepts it
-    const form = new URLSearchParams();
-    form.append('data', JSON.stringify(entry));
-    await fetch(S.gsUrl,{
-      method:'POST',
-      mode:'no-cors',
-      body: form
-    });
+    // Send as GET with data param — bypasses CORS entirely
+    const url = S.gsUrl + '?data=' + encodeURIComponent(JSON.stringify(entry));
+    await fetch(url, {method:'GET', mode:'no-cors'});
     updateSyncStatus('ok');
   }catch(e){updateSyncStatus('err');}
 }
