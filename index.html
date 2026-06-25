@@ -233,7 +233,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
   var sheetId = 'YOUR_SHEET_ID_HERE';
   var ss = SpreadsheetApp.openById(sheetId);
   var sheet = ss.getSheetByName('Scans') || ss.getActiveSheet();
-  var data = JSON.parse(e.postData.contents);
+  // Accept both application/json and text/plain (for CORS compatibility)
+  var raw = (e.postData && e.postData.contents) ? e.postData.contents : '{}';
+  var data = JSON.parse(raw);
 
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(['ScanID','Model','RawData','Date','Time','Status']);
@@ -491,7 +493,13 @@ function voidScan(id){
 async function postToSheet(entry){
   if(!S.gsUrl)return;
   try{
-    await fetch(S.gsUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
+    // no-cors + text/plain avoids CORS preflight block from GitHub Pages
+    await fetch(S.gsUrl,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify(entry)
+    });
     updateSyncStatus('ok');
   }catch(e){updateSyncStatus('err');}
 }
