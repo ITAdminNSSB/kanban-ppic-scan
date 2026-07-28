@@ -226,9 +226,9 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 <script>
 // =========================================================
 // GOOGLE SHEETS SETUP 
-// Paste your Google Apps Script Web App URL below
+// PASTE YOUR URL INSIDE THE QUOTES BELOW !!!
 // =========================================================
-const GOOGLE_APPS_SCRIPT_URL = ""; 
+const https://script.google.com/macros/s/AKfycbyEgfRX889rQXPM4DFP3VNnc4DYFzV6iDewoE2MFbArOM_QA2Q-bgfiKU1WUAK9kExwzg/exec = ""; 
 
 const MODEL_COLORS=['#0969DA','#1A7F37','#9A3412','#92400E','#6D28D9','#0E7490','#BE185D','#B45309'];
 let S={scans:[], modelColors:{}, colorIdx:0, operatorId:''};
@@ -392,14 +392,14 @@ function handleScan(raw){
 
 // --- GOOGLE SHEETS AUTOMATED BACKGROUND SYNC ---
 async function syncData() {
-  if (!GOOGLE_APPS_SCRIPT_URL) return; // Ignore if URL not set
+  if (!https://script.google.com/macros/s/AKfycbyEgfRX889rQXPM4DFP3VNnc4DYFzV6iDewoE2MFbArOM_QA2Q-bgfiKU1WUAK9kExwzg/exec) return; // Ignore if URL not set
   
   // Find all scans that haven't been successfully sent to Google Sheets
   const pendingScans = S.scans.filter(s => s.synced === false);
   
   for (let entry of pendingScans) {
     try {
-      const url = GOOGLE_APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(entry));
+      const url = https://script.google.com/macros/s/AKfycbyEgfRX889rQXPM4DFP3VNnc4DYFzV6iDewoE2MFbArOM_QA2Q-bgfiKU1WUAK9kExwzg/exec + '?data=' + encodeURIComponent(JSON.stringify(entry));
       await fetch(url, { method: 'GET', mode: 'no-cors' });
       
       // If network doesn't fail, assume successful hand-off to Google Server
