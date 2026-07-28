@@ -21,115 +21,87 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 .screen{display:none;position:fixed;top:0;left:0;right:0;bottom:60px;overflow-y:auto}
 .screen.active{display:flex;flex-direction:column}
 
-/* SCAN SCREEN */
-#scan-screen{background:var(--bg);overflow:hidden}
-#scan-main{
-  flex:1;display:grid;
-  grid-template-rows:auto auto auto 1fr auto;
-  align-items:start;
-  padding:12px;gap:10px;
-  max-width:480px;margin:0 auto;width:100%;
-}
+/* LOGIN / ID SCREEN (Blocks access until ID is entered) */
+#login-screen{display:flex;position:fixed;inset:0;background:var(--bg);z-index:300;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+#login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px 24px;width:100%;max-width:360px;text-align:center;box-shadow:0 12px 24px rgba(0,0,0,0.05);}
+.login-title{font-size:20px;font-weight:700;margin-bottom:8px;}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:24px;}
+.login-inp{width:100%;background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:16px;text-align:center;outline:none;margin-bottom:16px;transition:border-color .2s;}
+.login-inp:focus{border-color:var(--accent);}
+.login-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;}
+.login-btn:active{opacity:0.9;}
 
-/* operator id */
-#operator-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;gap:6px;}
-#operator-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
-#operator-inp{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;color:var(--text);transition:border-color .2s;}
-#operator-inp:focus{border-color:var(--accent);}
+/* OPERATOR BAR */
+#op-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
+#op-bar-label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;}
+#op-bar-id{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent);margin-left:6px;}
+#op-bar-change{font-size:12px;color:var(--accent);font-weight:500;cursor:pointer;background:none;border:none;padding:4px;}
+
+/* SCAN SCREEN */
+#scan-screen{background:var(--bg);overflow-x:hidden;}
+#scan-main{flex:1;display:flex;flex-direction:column;padding:12px;gap:12px;max-width:480px;margin:0 auto;width:100%;}
 
 /* scan icon */
 #scan-icon-wrap{
-  border-radius:16px;
-  background:var(--surface);border:2px dashed var(--border);
+  border-radius:12px;background:var(--surface);border:2px dashed var(--border);
   display:flex;flex-direction:row;align-items:center;justify-content:center;gap:14px;
-  transition:all .2s;position:relative;overflow:hidden;
-  padding:14px 20px;
+  transition:all .2s;position:relative;overflow:hidden;padding:16px;
 }
 #scan-icon-wrap.active{border-color:var(--accent);border-style:solid;background:#EBF3FF}
-#scan-icon-wrap svg{width:36px;height:36px;color:var(--border);transition:color .2s;flex-shrink:0}
+#scan-icon-wrap svg{width:32px;height:32px;color:var(--border);transition:color .2s;flex-shrink:0}
 #scan-icon-wrap.active svg{color:var(--accent)}
-#scan-ready-text{font-size:13px;color:var(--muted);font-weight:500;text-align:left;line-height:1.4}
+#scan-ready-text{font-size:14px;color:var(--muted);font-weight:600;text-align:left;line-height:1.4}
 #scan-icon-wrap.active #scan-ready-text{color:var(--accent)}
 #scan-icon-wrap.active::before{
-  content:'';position:absolute;inset:-2px;border-radius:22px;
+  content:'';position:absolute;inset:-2px;border-radius:14px;
   border:3px solid var(--accent);opacity:0;
   animation:ring 1.5s ease-out infinite;
 }
-@keyframes ring{0%{opacity:.6;transform:scale(1)}100%{opacity:0;transform:scale(1.05)}}
 
-/* last scan status */
-#scan-status{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;width:100%;}
-#scan-status-label{font-size:11px;color:var(--muted);margin-bottom:2px}
-#last-scan{font-size:12px;font-weight:600;color:var(--text);font-family:'JetBrains Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* GROUPED LIST STYLES (Used on Scan & Today screens) */
+.list-header{display:flex;align-items:center;justify-content:space-between;padding:8px 4px 4px;}
+.list-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.list-total{font-size:12px;font-weight:700;color:var(--accent)}
 
-/* model tabs */
-#chips-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;width:100%;display:flex;flex-direction:column;min-height:0}
-#chips-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border)}
-#chips-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
-#chips-total{font-size:11px;font-weight:700;color:var(--accent)}
-#model-chips{padding:10px;display:flex;flex-wrap:wrap;gap:10px;overflow-y:auto;align-content:flex-start;flex:1;min-height:0}
-.chip{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:10px 14px;border-radius:10px;font-family:'JetBrains Mono',monospace;
-  min-width:88px;text-align:center;border-width:2px;border-style:solid;cursor:default;}
-.chip-sebangor{font-size:15px;font-weight:700;line-height:1.2}
-.chip-kanban{font-size:13px;font-weight:600;margin-top:2px;opacity:.85}
-.chip-count{font-size:11px;font-weight:500;margin-top:4px;opacity:.7}
+.group-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden}
+.group-head{padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;background:var(--surface);}
+.group-badge{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.group-name{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;flex:1;word-break:break-all;line-height:1.3;}
+.group-count{background:#EBF3FF;color:var(--accent);border-radius:12px;padding:2px 8px;font-size:11px;font-weight:600}
+.group-rows{border-top:1px solid var(--border)}
+.scan-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);background:#FAFAFA;}
+.scan-row:last-child{border-bottom:none}
+.scan-row.voided{opacity:.4}
+.scan-row-left{display:flex;flex-direction:column;gap:3px;}
+.scan-row-time{font-size:12px;font-weight:600;color:var(--text);font-family:'JetBrains Mono',monospace;}
+.scan-row-op{font-size:10px;color:var(--muted);font-weight:500;}
+.void-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:10px;padding:4px 8px;cursor:pointer;font-weight:600;}
+.void-btn:hover{border-color:var(--red);color:var(--red)}
+.void-label{font-size:10px;color:var(--red);font-family:'JetBrains Mono',monospace;font-weight:600;}
 
 /* hidden scanner input */
 #scanner-input{position:absolute;opacity:0;width:1px;height:1px;top:-999px;}
 
-/* manual entry */
-#manual-section{width:100%}
-#manual-label{font-size:11px;color:var(--muted);margin-bottom:6px}
-#manual-row{display:flex;gap:8px}
-#manual-inp{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;padding:8px 12px;outline:none}
-#manual-inp:focus{border-color:var(--accent)}
-#manual-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:8px 16px;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap}
-
 /* flash overlay */
 #flash{
-  position:fixed;inset:0;bottom:60px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(255,255,255,.97);
-  opacity:0;pointer-events:none;transition:opacity .15s;z-index:50;gap:6px;
+  position:fixed;inset:0;bottom:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.97);opacity:0;pointer-events:none;transition:opacity .15s;z-index:50;gap:6px;
 }
 #flash.show{opacity:1}
-#flash-model{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:700;color:var(--accent);letter-spacing:2px;text-align:center;padding:0 24px;line-height:1.2;max-width:100%;word-break:break-all}
-#flash-time{font-size:13px;color:var(--muted)}
-#flash-ok{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:14px;font-weight:600;color:var(--green)}
-#flash-ok svg{width:20px;height:20px}
+#flash-model{font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:700;color:var(--accent);text-align:center;padding:0 24px;line-height:1.2;word-break:break-all}
+#flash-ok{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:15px;font-weight:600;color:var(--green)}
+#flash-ok svg{width:24px;height:24px}
 
-/* TODAY */
+/* TODAY SCREEN */
 #today-screen{background:var(--bg)}
 .today-header{padding:16px 16px 10px;border-bottom:1px solid var(--border);background:var(--surface)}
-.today-title{font-size:17px;font-weight:600}
-.today-sub{font-size:12px;color:var(--muted);margin-top:3px}
-.group-toggle{display:flex;gap:6px;margin-top:12px}
-.g-btn{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif}
-.g-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-.today-body{padding:12px 16px;flex:1}
-.group-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden}
-.group-head{padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer}
-.group-badge{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.group-name{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;flex:1}
-.group-count{background:#EBF3FF;color:var(--accent);border-radius:12px;padding:2px 8px;font-size:11px;font-weight:600}
-.group-range{font-size:11px;color:var(--muted)}
-.group-rows{display:none;border-top:1px solid var(--border)}
-.group-rows.open{display:block}
-.scan-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border)}
-.scan-row:last-child{border-bottom:none}
-.scan-row.voided{opacity:.35}
-.scan-row-model{font-size:12px;font-family:'JetBrains Mono',monospace;font-weight:600;flex:1}
-.scan-row-details{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
-.scan-row-op{font-size:10px;color:var(--accent);font-weight:600;}
-.scan-row-time{font-size:11px;color:var(--muted)}
-.void-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:10px;padding:3px 7px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;margin-left:6px;}
-.void-btn:hover{border-color:var(--red);color:var(--red)}
-.void-label{font-size:10px;color:var(--red);font-family:'JetBrains Mono',monospace;margin-left:6px;}
-#empty-today{text-align:center;color:var(--muted);font-size:14px;padding:48px 24px}
-#empty-today svg{width:40px;height:40px;opacity:.25;display:block;margin:0 auto 12px}
+.today-title{font-size:18px;font-weight:600}
+.today-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.today-body{padding:12px;max-width:480px;margin:0 auto;width:100%;}
+#empty-state{text-align:center;color:var(--muted);font-size:14px;padding:48px 24px}
+#empty-state svg{width:40px;height:40px;opacity:.25;display:block;margin:0 auto 12px}
 
-/* SETTINGS */
+/* SETTINGS SCREEN */
 #settings-screen{background:var(--bg)}
 .settings-wrap{padding:16px;max-width:600px;margin:0 auto}
 .s-section{margin-bottom:24px}
@@ -166,58 +138,54 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 </head>
 <body>
 
+<!-- LOGIN / ID SCREEN -->
+<div id="login-screen">
+  <div id="login-card">
+    <div class="login-title">Operator Login</div>
+    <div class="login-sub">Please enter your ID number to begin</div>
+    <input type="text" id="op-id-login" class="login-inp" placeholder="Scan or type ID..." autocomplete="off">
+    <button class="login-btn" onclick="submitLogin()">Start Scanning</button>
+  </div>
+</div>
+
 <!-- SCAN SCREEN -->
-<div id="scan-screen" class="screen active">
+<div id="scan-screen" class="screen">
   <!-- hidden input to catch scanner keystrokes -->
   <input id="scanner-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 
-  <div id="scan-main">
-    
-    <div id="operator-wrap">
-      <div id="operator-label">Operator ID</div>
-      <input id="operator-inp" type="text" placeholder="Scan or type ID..." autocomplete="off">
-    </div>
+  <!-- Operator Bar -->
+  <div id="op-bar">
+    <div id="op-bar-label">Operator: <span id="op-bar-id">---</span></div>
+    <button id="op-bar-change" onclick="logout()">Change ID</button>
+  </div>
 
+  <div id="scan-main">
     <div id="scan-icon-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/>
         <rect x="7" y="7" width="4" height="4" rx="1"/>
         <rect x="13" y="7" width="4" height="4" rx="1"/>
         <rect x="7" y="13" width="4" height="4" rx="1"/>
-        <path d="M13 13h4v4h-4z" fill="currentColor" stroke="none" opacity=".3"/>
       </svg>
-      <div id="scan-ready-text">Ready to scan<br>Point scanner at QR code</div>
+      <div id="scan-ready-text">Scanner Active<br><span style="font-size:12px;font-weight:400">Point at kanban QR</span></div>
     </div>
 
-    <div id="scan-status">
-      <div id="scan-status-label">Last scanned</div>
-      <div id="last-scan">—</div>
+    <!-- Scanned Models List -->
+    <div class="list-header">
+      <span class="list-title">Scanned Models</span>
+      <span class="list-total" id="scan-total">0 scans</span>
     </div>
-
-    <div id="chips-wrap">
-      <div id="chips-header">
-        <span id="chips-title">Models today</span>
-        <span id="chips-total">0 scans</span>
-      </div>
-      <div id="model-chips"></div>
-    </div>
-
-    <div id="manual-section">
-      <div id="manual-label">Or enter manually</div>
-      <div id="manual-row">
-        <input id="manual-inp" type="text" placeholder="Type model / ID…" autocomplete="off" autocorrect="off" spellcheck="false">
-        <button id="manual-btn">Log</button>
-      </div>
+    <div id="scan-groups-container">
+      <!-- Grouped items injected here -->
     </div>
   </div>
 
   <!-- flash popup -->
   <div id="flash">
     <div id="flash-model">—</div>
-    <div id="flash-time"></div>
     <div id="flash-ok">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-      Saved
+      Logged
     </div>
   </div>
 </div>
@@ -225,25 +193,17 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 <!-- TODAY SCREEN -->
 <div id="today-screen" class="screen">
   <div class="today-header">
-    <div class="today-title">Today's Scans</div>
+    <div class="today-title">Today's History</div>
     <div class="today-sub" id="today-sub">Loading…</div>
-    <div class="group-toggle">
-      <button class="g-btn active" id="g-model" onclick="setGrouping('model')">By Model</button>
-      <button class="g-btn" id="g-time" onclick="setGrouping('time')">By Time</button>
-    </div>
   </div>
   <div class="today-body" id="today-body">
-    <div id="empty-today">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 15h6"/></svg>
-      No scans recorded today
-    </div>
+    <!-- Same grouped items injected here -->
   </div>
 </div>
 
 <!-- SETTINGS SCREEN -->
 <div id="settings-screen" class="screen">
   <div class="settings-wrap">
-    <div style="padding-top:8px"></div>
     <div class="s-section">
       <div class="s-title">Google Sheets Sync</div>
       <div class="s-card">
@@ -254,45 +214,38 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
           <div class="sync-dot" id="sync-dot"></div>
           <div class="sync-label" id="sync-label">Not configured</div>
         </div>
-        <div class="s-hint">Every scan will POST to this URL and write a row into your Google Sheet automatically.</div>
       </div>
     </div>
     <div class="s-section">
       <div class="s-title">Apps Script Code</div>
       <div class="s-card">
-        <div class="s-label">Paste this into script.google.com → New project → Deploy as Web App</div>
+        <div class="s-label">Paste this into Apps Script:</div>
         <div class="code-block" id="script-code">function doPost(e) {
   var sheetId = 'YOUR_SHEET_ID_HERE';
   var ss = SpreadsheetApp.openById(sheetId);
   var sheet = ss.getSheetByName('Scans') || ss.getActiveSheet();
-  // Read from form parameter (URLSearchParams) or postData
+  
   var raw = '{}';
-  if (e.parameter && e.parameter.data) {
-    raw = e.parameter.data;
-  } else if (e.postData && e.postData.contents) {
-    raw = e.postData.contents;
-  }
+  if (e.parameter && e.parameter.data) raw = e.parameter.data;
+  else if (e.postData && e.postData.contents) raw = e.postData.contents;
   var data = JSON.parse(raw);
 
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['ScanID', 'OperatorID', 'Model', 'RawData', 'Date', 'Time', 'Status']);
+    sheet.appendRow(['ScanID', 'OperatorID', 'ModelCategory', 'Date', 'Time', 'Status']);
   }
 
   sheet.appendRow([
-    data.scanId, data.operatorId || '', data.model, data.rawData,
-    data.date,   data.time,  data.status || 'OK'
+    data.scanId, data.operatorId, data.model,
+    data.date, data.time, data.status || 'OK'
   ]);
 
-  return ContentService
-    .createTextResponse(JSON.stringify({result:'OK'}))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextResponse(JSON.stringify({result:'OK'})).setMimeType(ContentService.MimeType.JSON);
 }</div>
         <button class="copy-btn" onclick="copyScript()">Copy code</button>
-        <div class="s-hint">Replace YOUR_SHEET_ID_HERE with the ID from your Sheet URL. Deploy → Execute as: Me → Who has access: Anyone.</div>
       </div>
     </div>
     <div class="s-section">
-      <div class="s-title">Data</div>
+      <div class="s-title">Data Management</div>
       <div class="s-card">
         <div class="s-label">Local storage</div>
         <div class="s-hint" style="margin-bottom:10px" id="data-count">—</div>
@@ -303,7 +256,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 </div>
 
 <!-- NAV -->
-<nav id="nav">
+<nav id="nav" style="display:none;">
   <button class="nav-btn active" id="nav-scan" onclick="showScreen('scan')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="3" width="6" height="6" rx="1"/><rect x="3" y="15" width="6" height="6" rx="1"/><path d="M15 15h2v2h-2zM19 15h2v2h-2zM15 19h2v2h-2zM19 19h2v2h-2z"/></svg>
     Scan
@@ -312,7 +265,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
     Today
   </button>
-  <!-- Settings hidden — long-press Today tab 3s to unlock -->
 </nav>
 
 <!-- PIN MODAL -->
@@ -345,59 +297,74 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 
 <script>
 const MODEL_COLORS=['#0969DA','#1A7F37','#9A3412','#92400E','#6D28D9','#0E7490','#BE185D','#B45309'];
-let S={scans:[],gsUrl:'',groupBy:'model',modelColors:{},colorIdx:0,operatorId:''};
+let S={scans:[],gsUrl:'',modelColors:{},colorIdx:0,operatorId:''};
 
-function save(){localStorage.setItem('kanban_s',JSON.stringify({scans:S.scans,gsUrl:S.gsUrl,modelColors:S.modelColors,colorIdx:S.colorIdx,operatorId:S.operatorId}));}
+function save(){localStorage.setItem('kanban_s',JSON.stringify(S));}
 function load(){
   try{
     const d=JSON.parse(localStorage.getItem('kanban_s')||'{}');
     S.scans=d.scans||[];S.gsUrl=d.gsUrl||'';S.modelColors=d.modelColors||{};S.colorIdx=d.colorIdx||0;S.operatorId=d.operatorId||'';
     document.getElementById('gs-url').value=S.gsUrl;
-    document.getElementById('operator-inp').value=S.operatorId;
     updateSyncStatus('');
   }catch(e){}
 }
 function colorFor(model){
-  const parts = model.split('|');
-  const key = parts.length>=2 ? parts[0].trim()+'|'+parts[1].trim() : parts[0].trim();
-  if(!S.modelColors[key]){S.modelColors[key]=MODEL_COLORS[S.colorIdx%MODEL_COLORS.length];S.colorIdx++;save();}
-  return S.modelColors[key];
+  if(!S.modelColors[model]){S.modelColors[model]=MODEL_COLORS[S.colorIdx%MODEL_COLORS.length];S.colorIdx++;save();}
+  return S.modelColors[model];
 }
 function todayStr(){return new Date().toISOString().slice(0,10);}
 function todayScans(){return S.scans.filter(s=>s.date===todayStr());}
 
-// ── OPERATOR ID LOGIC ──
-const opInput = document.getElementById('operator-inp');
-opInput.addEventListener('input', (e) => {
-  S.operatorId = e.target.value.trim();
-  save();
-});
-opInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    S.operatorId = e.target.value.trim();
-    save();
-    opInput.blur();
-    toast('Operator locked in');
-    scannerInput.focus();
+// ── LOGIN / OPERATOR ID SYSTEM ──
+function checkLogin() {
+  if (!S.operatorId) {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('nav').style.display = 'none';
+    document.getElementById('op-id-login').focus();
+  } else {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('nav').style.display = 'flex';
+    document.getElementById('op-bar-id').textContent = S.operatorId;
+    showScreen('scan');
   }
+}
+
+function submitLogin() {
+  const val = document.getElementById('op-id-login').value.trim();
+  if (!val) { toast('Please enter an ID'); return; }
+  S.operatorId = val;
+  save();
+  document.getElementById('op-id-login').value = '';
+  checkLogin();
+  toast('ID Locked. Ready to scan.');
+}
+
+// Allow pressing enter on login field
+document.getElementById('op-id-login').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') submitLogin();
 });
 
+function logout() {
+  S.operatorId = '';
+  save();
+  checkLogin();
+}
 
 // ── HARDWARE SCANNER INPUT ──
 let scanBuffer='';
 let scanTimer=null;
-const SCAN_TIMEOUT=100;
 
 document.addEventListener('keydown', e => {
   const tag = document.activeElement.tagName;
   const id  = document.activeElement.id;
-  if ((tag==='INPUT'||tag==='TEXTAREA') && id!=='scanner-input') return;
+  // Ignore if user is typing in settings or login
+  if ((tag==='INPUT'||tag==='TEXTAREA') && id!=='scanner-input' && id!=='op-id-login') return;
 
   if (e.key==='Enter') {
     clearTimeout(scanTimer);
     const val = scanBuffer.trim();
     scanBuffer = '';
-    if (val.length > 0) handleScan(val);
+    if (val.length > 0 && S.operatorId) handleScan(val); // Only process if logged in
     return;
   }
 
@@ -410,14 +377,14 @@ document.addEventListener('keydown', e => {
 
 const scannerInput = document.getElementById('scanner-input');
 function keepFocus(){
+  if (!S.operatorId) return; // don't steal focus if on login screen
   const id = document.activeElement.id;
-  if(id!=='manual-inp' && id!=='gs-url' && id!=='scanner-input' && id!=='operator-inp'){
+  if(id!=='gs-url' && id!=='scanner-input'){
     scannerInput.focus();
   }
 }
 document.addEventListener('click', ()=>setTimeout(keepFocus,50));
 document.addEventListener('touchend', ()=>setTimeout(keepFocus,50));
-
 
 // ── SCAN HANDLER ──
 let flashTimeout;
@@ -430,25 +397,20 @@ function handleScan(raw){
   const model=raw.trim().toUpperCase();
   const now=new Date();
   
-  // Enforce Operator ID logic (optional: prompt if blank)
-  if(!S.operatorId) {
-    toast('Please enter Operator ID first');
-    document.getElementById('operator-inp').focus();
-    return;
-  }
-
   const entry={
     scanId:'SC-'+Date.now(),
     operatorId: S.operatorId,
-    model,rawData:raw,
+    model: model,
     date:now.toISOString().slice(0,10),
     time:now.toTimeString().slice(0,8),
     status:'OK'
   };
-  S.scans.push(entry);save();updateScanBar();postToSheet(entry);
+  S.scans.push(entry);save();
+  renderGroupedLists();
+  postToSheet(entry);
 
+  // UI Flash
   document.getElementById('flash-model').textContent=model;
-  document.getElementById('flash-time').textContent=entry.time;
   document.getElementById('flash').classList.add('show');
   document.getElementById('scan-icon-wrap').classList.add('active');
 
@@ -457,130 +419,84 @@ function handleScan(raw){
     document.getElementById('flash').classList.remove('show');
     document.getElementById('scan-icon-wrap').classList.remove('active');
     lastScanId='';
-  },1800);
+  },1200);
 }
 
-// manual log
-document.getElementById('manual-btn').onclick=()=>{
-  const v=document.getElementById('manual-inp').value.trim();
-  if(!v)return;
-  handleScan(v);
-  document.getElementById('manual-inp').value='';
-};
-document.getElementById('manual-inp').addEventListener('keydown',e=>{
-  if(e.key==='Enter'){document.getElementById('manual-btn').click();}
-});
-
-// ── SCAN BAR ──
-function updateScanBar(){
-  const today=todayScans();
-  const active=today.filter(s=>s.status!=='VOID');
-  const last=active[active.length-1];
-  const lastLabel = last ? (last.model.includes('|') ? last.model.split('|')[0].trim() : last.model) : null;
-  document.getElementById('last-scan').textContent=last?`${lastLabel}  ·  ${last.time}`:'—';
+// ── GROUPING & RENDERING (SORTED BY CATEGORY) ──
+function renderGroupedLists(){
+  const today = todayScans();
+  const active = today.filter(s => s.status !== 'VOID');
+  const voided = today.filter(s => s.status === 'VOID');
   
-  const counts={};
-  active.forEach(s=>{
-    const parts = s.model.split('|');
-    const key = parts.length>=2 ? parts[0].trim()+'|'+parts[1].trim() : parts[0].trim();
-    counts[key]=(counts[key]||0)+1;
+  // Update totals
+  document.getElementById('scan-total').textContent = `${active.length} scan${active.length!==1?'s':''}`;
+  document.getElementById('today-sub').textContent = `${new Date().toLocaleDateString('en-MY',{weekday:'long',day:'numeric',month:'short'})}  ·  ${active.length} scans${voided.length?'  ·  '+voided.length+' voided':''}`;
+
+  const containerScan = document.getElementById('scan-groups-container');
+  const containerToday = document.getElementById('today-body');
+
+  if (today.length === 0) {
+    const emptyHtml = `<div id="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 15h6"/></svg>No scans recorded today</div>`;
+    containerScan.innerHTML = emptyHtml;
+    containerToday.innerHTML = emptyHtml;
+    return;
+  }
+
+  // 1. Group by model category
+  const groups = {};
+  today.forEach(s => {
+    if(!groups[s.model]) groups[s.model] = [];
+    groups[s.model].push(s);
   });
-  const total=active.length;
-  document.getElementById('chips-total').textContent=`${total} scan${total!==1?'s':''}`;
-  const entries=Object.entries(counts);
-  if(entries.length===0){
-    document.getElementById('model-chips').innerHTML='<div style="padding:8px 4px;font-size:11px;color:var(--muted);text-align:center">No scans yet</div>';
-    return;
-  }
-  entries.sort((a,b)=>b[1]-a[1]);
-  document.getElementById('model-chips').innerHTML=entries.map(([m,c])=>{
-    const col=colorFor(m);
-    const parts = m.split('|');
-    const sebangor = parts[0].trim();
-    const kanban = parts.length>1 ? parts[1].trim() : '';
-    return `<div class="chip" style="background:${col}18;border-color:${col}66;color:${col}">
-      <span class="chip-sebangor">${sebangor}</span>
-      ${kanban?`<span class="chip-kanban">| ${kanban}</span>`:''}
-      <span class="chip-count">${c} scan${c!==1?'s':''}</span>
-    </div>`;
-  }).join('');
-}
 
-// ── TODAY VIEW ──
-function setGrouping(by){
-  S.groupBy=by;
-  document.getElementById('g-model').classList.toggle('active',by==='model');
-  document.getElementById('g-time').classList.toggle('active',by==='time');
-  renderToday();
-}
-function renderToday(){
-  const today=todayScans();
-  const total=today.filter(s=>s.status!=='VOID').length;
-  const voided=today.filter(s=>s.status==='VOID').length;
-  document.getElementById('today-sub').textContent=
-    `${new Date().toLocaleDateString('en-MY',{weekday:'long',day:'numeric',month:'short'})}  ·  ${total} scan${total!==1?'s':''}${voided?'  ·  '+voided+' voided':''}`;
-  const body=document.getElementById('today-body');
-  if(today.length===0){
-    body.innerHTML=`<div id="empty-today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 15h6"/></svg>No scans recorded today</div>`;
-    return;
-  }
-  
-  // Sort automatically into models category
-  if(S.groupBy==='model'){
-    const groups={};
-    today.forEach(s=>{if(!groups[s.model])groups[s.model]=[];groups[s.model].push(s);});
+  // 2. Sort model categories alphabetically
+  const sortedModels = Object.keys(groups).sort();
+
+  // 3. Build HTML
+  const html = sortedModels.map(model => {
+    const rows = groups[model];
+    const col = colorFor(model);
+    const activeCount = rows.filter(r => r.status !== 'VOID').length;
     
-    // Auto-sort alphabetical by model category
-    const sortedModels = Object.keys(groups).sort();
-    
-    body.innerHTML=sortedModels.map(model=>{
-      const rows = groups[model];
-      const col=colorFor(model);
-      const active=rows.filter(r=>r.status!=='VOID').length;
-      const times=rows.map(r=>r.time).sort();
-      const range=times.length>1?`${times[0]} – ${times[times.length-1]}`:times[0];
-      
-      const rowsHtml=rows.map(r=>`
-        <div class="scan-row${r.status==='VOID'?' voided':''}">
-          <span class="scan-row-model" style="color:${col}">${r.model}</span>
-          <div class="scan-row-details">
-            <span class="scan-row-op">OP: ${r.operatorId || 'Unknown'}</span>
-            <span class="scan-row-time">${r.time}</span>
-          </div>
-          ${r.status==='VOID'?'<span class="void-label">VOID</span>':`<button class="void-btn" onclick="voidScan('${r.scanId}')">Void</button>`}
-        </div>`).join('');
-        
-      return `<div class="group-card">
-        <div class="group-head" onclick="this.nextElementSibling.classList.toggle('open')">
+    // Sort rows newest first inside the category
+    rows.sort((a,b) => b.time.localeCompare(a.time));
+
+    const rowsHtml = rows.map(r => `
+      <div class="scan-row ${r.status==='VOID'?'voided':''}">
+        <div class="scan-row-left">
+          <span class="scan-row-time">${r.time}</span>
+          <span class="scan-row-op">OP: ${r.operatorId}</span>
+        </div>
+        ${r.status==='VOID' ? 
+          '<span class="void-label">VOID</span>' : 
+          `<button class="void-btn" onclick="voidScan('${r.scanId}')">VOID</button>`}
+      </div>
+    `).join('');
+
+    return `
+      <div class="group-card">
+        <div class="group-head">
           <div class="group-badge" style="background:${col}"></div>
           <div class="group-name" style="color:${col}">${model}</div>
-          <span class="group-count">${active}</span>
-          <span class="group-range">${range}</span>
+          <span class="group-count">${activeCount}</span>
         </div>
-        <div class="group-rows open">${rowsHtml}</div>
-      </div>`;
-    }).join('');
-  } else {
-    const sorted=[...today].sort((a,b)=>a.time.localeCompare(b.time));
-    body.innerHTML=`<div class="group-card"><div class="group-rows open">${sorted.map(r=>{
-      const col=colorFor(r.model);
-      return `<div class="scan-row${r.status==='VOID'?' voided':''}">
-        <div class="group-badge" style="background:${col};width:8px;height:8px;border-radius:50%;flex-shrink:0"></div>
-        <span class="scan-row-model" style="color:${col}">${r.model}</span>
-        <div class="scan-row-details">
-          <span class="scan-row-op">OP: ${r.operatorId || 'Unknown'}</span>
-          <span class="scan-row-time">${r.time}</span>
-        </div>
-        ${r.status==='VOID'?'<span class="void-label">VOID</span>':`<button class="void-btn" onclick="voidScan('${r.scanId}')">Void</button>`}
-      </div>`;
-    }).join('')}</div></div>`;
-  }
+        <div class="group-rows">${rowsHtml}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Inject same HTML into both screens for consistency
+  containerScan.innerHTML = html;
+  containerToday.innerHTML = html;
 }
+
 function voidScan(id){
   const entry=S.scans.find(s=>s.scanId===id);
   if(!entry)return;
-  entry.status='VOID';save();updateScanBar();renderToday();
-  postToSheet({...entry,status:'VOID'});toast('Scan voided');
+  entry.status='VOID';save();
+  renderGroupedLists();
+  postToSheet({...entry,status:'VOID'});
+  toast('Scan voided');
 }
 
 // ── SHEETS ──
@@ -605,7 +521,7 @@ function copyScript(){
 }
 function clearData(){
   if(!confirm('Clear all local scan data?'))return;
-  S.scans=[];save();updateScanBar();renderToday();
+  S.scans=[];save();renderGroupedLists();
   document.getElementById('data-count').textContent='0 scans stored locally';
   toast('Data cleared');
 }
@@ -618,48 +534,39 @@ function showScreen(name){
   const btn=document.getElementById('nav-'+name);
   if(scr)scr.classList.add('active');
   if(btn)btn.classList.add('active');
-  if(name==='today')renderToday();
   if(name==='settings')document.getElementById('data-count').textContent=S.scans.length+' scans stored locally';
-  if(name==='scan')setTimeout(()=>scannerInput.focus(),100);
+  if(name==='scan')setTimeout(()=>keepFocus(),100);
 }
 
 // ── TOAST ──
 let toastT;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2200);}
 
-
 // ── PIN / ADMIN ──
-const ADMIN_PIN = '1234'; // change this to your PIN
+const ADMIN_PIN = '1234'; 
 let pinBuffer = '';
-
 let lpTimer = null;
 document.getElementById('nav-today').addEventListener('pointerdown', () => {
-  lpTimer = setTimeout(() => { openPinModal(); }, 3000);
+  lpTimer = setTimeout(() => openPinModal(), 3000);
 });
 document.getElementById('nav-today').addEventListener('pointerup', () => clearTimeout(lpTimer));
 document.getElementById('nav-today').addEventListener('pointerleave', () => clearTimeout(lpTimer));
 
 function openPinModal() {
-  pinBuffer = '';
-  updatePinDots();
+  pinBuffer = ''; updatePinDots();
   document.getElementById('pin-error').textContent = '';
   document.getElementById('pin-modal').classList.add('open');
 }
 function closePinModal() {
   document.getElementById('pin-modal').classList.remove('open');
-  pinBuffer = '';
 }
 function pinKey(k) {
   if (pinBuffer.length >= 4) return;
-  pinBuffer += k;
-  updatePinDots();
-  if (pinBuffer.length === 4) {
-    setTimeout(() => checkPin(), 150);
-  }
+  pinBuffer += k; updatePinDots();
+  if (pinBuffer.length === 4) setTimeout(() => checkPin(), 150);
 }
 function pinClear() {
-  pinBuffer = pinBuffer.slice(0, -1);
-  updatePinDots();
+  pinBuffer = pinBuffer.slice(0, -1); updatePinDots();
   document.getElementById('pin-error').textContent = '';
 }
 function updatePinDots() {
@@ -669,18 +576,17 @@ function updatePinDots() {
 }
 function checkPin() {
   if (pinBuffer === ADMIN_PIN) {
-    closePinModal();
-    showScreen('settings');
+    closePinModal(); showScreen('settings');
   } else {
     document.getElementById('pin-error').textContent = 'Incorrect PIN';
-    pinBuffer = '';
-    updatePinDots();
+    pinBuffer = ''; updatePinDots();
   }
 }
 
 // ── INIT ──
-load();updateScanBar();
-setTimeout(()=>scannerInput.focus(),200);
+load();
+renderGroupedLists();
+checkLogin(); // Triggers the lock screen if no ID is set
 </script>
 </body>
 </html>
