@@ -195,13 +195,8 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 <script>
 // =========================================================
 // GOOGLE SHEETS SETUP 
-// PASTE YOUR URL BELOW. MAKE SURE YOU KEEP THE "QUOTATION MARKS"
 // =========================================================
-
 const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEgfRX889rQXPM4DFP3VNnc4DYFzV6iDewoE2MFbArOM_QA2Q-bgfiKU1WUAK9kExwzg/exec"; 
-
-// =========================================================
-
 
 const MODEL_COLORS=['#0969DA','#1A7F37','#9A3412','#92400E','#6D28D9','#0E7490','#BE185D','#B45309'];
 let S={scans:[], modelColors:{}, colorIdx:0, operatorId:''};
@@ -358,7 +353,7 @@ function handleScan(raw){
 
 // --- GOOGLE SHEETS SIMPLE SYNC ---
 async function postToSheet(entry) {
-  if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbyEgfRX889rQXPM4DFP3VNnc4DYFzV6iDewoE2MFbArOM_QA2Q-bgfiKU1WUAK9kExwzg/exec") return; 
+  if (!GOOGLE_APPS_SCRIPT_URL) return; // FIXED: Safegaurd block has been removed
   try {
     const url = GOOGLE_APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(entry));
     await fetch(url, { method: 'GET', mode: 'no-cors' });
