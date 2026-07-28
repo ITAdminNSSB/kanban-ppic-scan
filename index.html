@@ -198,7 +198,7 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 // PASTE YOUR URL BELOW. MAKE SURE YOU KEEP THE "QUOTATION MARKS"
 // =========================================================
 
-const GOOGLE_APPS_SCRIPT_URL = "YOUR_LINK_HERE"; 
+const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEgfRX889rQXPM4DFP3VNnc4DYFzV6iDewoE2MFbArOM_QA2Q-bgfiKU1WUAK9kExwzg/exec"; 
 
 // =========================================================
 
@@ -358,7 +358,7 @@ function handleScan(raw){
 
 // --- GOOGLE SHEETS SIMPLE SYNC ---
 async function postToSheet(entry) {
-  if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === "YOUR_LINK_HERE") return; 
+  if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbyEgfRX889rQXPM4DFP3VNnc4DYFzV6iDewoE2MFbArOM_QA2Q-bgfiKU1WUAK9kExwzg/exec") return; 
   try {
     const url = GOOGLE_APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(entry));
     await fetch(url, { method: 'GET', mode: 'no-cors' });
