@@ -15,20 +15,20 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 
 /* =========================================
    PAGE 1: LOGIN SCREEN (FRONT PAGE)
-   Forced to be the only thing visible on load
+   Matches image_24544d.png perfectly
 ========================================= */
 #login-screen{display:flex;position:fixed;inset:0;background:var(--bg);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
 #login-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:32px 24px;width:100%;max-width:360px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.05);}
 .login-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;}
 .login-sub{font-size:12px;color:var(--muted);margin-bottom:24px;}
-.login-inp{width:100%;background:var(--surface);border:1px solid var(--accent);border-radius:6px;padding:12px;font-family:'JetBrains Mono',monospace;font-size:14px;text-align:center;outline:none;margin-bottom:16px;color:var(--text); transition:box-shadow .2s;}
-.login-inp:focus{box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);}
+.login-inp{width:100%;background:var(--surface);border:1px solid var(--accent);border-radius:6px;padding:12px;font-family:'JetBrains Mono',monospace;font-size:14px;text-align:center;outline:none;margin-bottom:16px;color:var(--text);}
 .login-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:6px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;}
 .login-btn:active{opacity:0.9;}
 
+
 /* =========================================
    PAGE 2: MAIN APP
-   Hidden completely until logged in
+   Matches image_2450a4.png perfectly
 ========================================= */
 #app-container{display:none; height:100%; flex-direction:column;}
 
@@ -88,6 +88,7 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 .void-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:10px;padding:4px 10px;cursor:pointer;font-weight:600;}
 .void-btn:hover{border-color:var(--red);color:var(--red)}
 .void-label{font-size:10px;color:var(--red);font-family:'JetBrains Mono',monospace;font-weight:600;}
+.sync-badge{font-size:9px; color:var(--accent); border:1px solid var(--accent); border-radius:4px; padding:1px 4px; font-weight:bold;}
 
 /* Hidden scanner input */
 #scanner-input{position:absolute;opacity:0;width:1px;height:1px;top:-999px;}
@@ -127,9 +128,8 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 
 <!-- =========================================
      PAGE 1: LOGIN (Strict Front Page) 
-     style="display:flex;" ensures it is ALWAYS visible on load
 ========================================== -->
-<div id="login-screen" style="display:flex;">
+<div id="login-screen">
   <div id="login-card">
     <div class="login-title">Operator Login</div>
     <div class="login-sub">Please enter your ID number to begin</div>
@@ -139,10 +139,9 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 </div>
 
 <!-- =========================================
-     PAGE 2: MAIN APP (Hidden completely until ID is entered)
-     style="display:none;" ensures it NEVER flashes on the screen
+     PAGE 2: MAIN APP (Hidden until ID is entered)
 ========================================== -->
-<div id="app-container" style="display:none;">
+<div id="app-container">
   
   <!-- Top Operator Bar -->
   <div id="op-bar">
@@ -224,9 +223,9 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 <script>
 // =========================================================
 // GOOGLE SHEETS SETUP 
-// PASTE YOUR URL INSIDE THE QUOTES BELOW !!!
+// Paste your Google Apps Script Web App URL below
 // =========================================================
-const https://script.google.com/macros/s/AKfycbyEgfRX889rQXPM4DFP3VNnc4DYFzV6iDewoE2MFbArOM_QA2Q-bgfiKU1WUAK9kExwzg/exec = ""; 
+const GOOGLE_APPS_SCRIPT_URL = ""; 
 
 const MODEL_COLORS=['#0969DA','#1A7F37','#9A3412','#92400E','#6D28D9','#0E7490','#BE185D','#B45309'];
 let S={scans:[], modelColors:{}, colorIdx:0, operatorId:''};
@@ -239,7 +238,7 @@ function load(){
     S.modelColors = d.modelColors || {};
     S.colorIdx = d.colorIdx || 0;
     
-    // FORCES THE LOGIN PAGE TO ALWAYS BE SHOWN ON REFRESH.
+    // DELIBERATELY WIPING OPERATOR ID ON LOAD SO YOU ALWAYS SEE THE LOGIN PAGE FIRST
     S.operatorId = ''; 
     
     document.getElementById('history-date').value = todayStr();
@@ -363,15 +362,16 @@ function handleScan(raw){
     model: model,
     date: todayStr(),
     time: timeStr(),
-    status:'OK'
+    status:'OK',
+    synced: false // Flag to ensure it syncs to Google Sheets
   };
   
   S.scans.push(entry);
   save();
   renderGroupedLists();
   
-  // SEND IMMEDIATELY TO GOOGLE SHEETS
-  postToSheet(entry);
+  // Trigger background sync
+  syncData();
 
   // Flash UI
   document.getElementById('flash-model').textContent=model;
@@ -386,16 +386,33 @@ function handleScan(raw){
   },1200);
 }
 
-// --- GOOGLE SHEETS SIMPLE SYNC ---
-async function postToSheet(entry) {
-  if (!https://script.google.com/macros/s/AKfycbyEgfRX889rQXPM4DFP3VNnc4DYFzV6iDewoE2MFbArOM_QA2Q-bgfiKU1WUAK9kExwzg/exec) return; 
-  try {
-    const url = https://script.google.com/macros/s/AKfycbyEgfRX889rQXPM4DFP3VNnc4DYFzV6iDewoE2MFbArOM_QA2Q-bgfiKU1WUAK9kExwzg/exec + '?data=' + encodeURIComponent(JSON.stringify(entry));
-    await fetch(url, { method: 'GET', mode: 'no-cors' });
-  } catch (e) {
-    console.log("Sync error: ", e);
+// --- GOOGLE SHEETS AUTOMATED BACKGROUND SYNC ---
+async function syncData() {
+  if (!GOOGLE_APPS_SCRIPT_URL) return; // Ignore if URL not set
+  
+  // Find all scans that haven't been successfully sent to Google Sheets
+  const pendingScans = S.scans.filter(s => s.synced === false);
+  
+  for (let entry of pendingScans) {
+    try {
+      const url = GOOGLE_APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(entry));
+      await fetch(url, { method: 'GET', mode: 'no-cors' });
+      
+      // If network doesn't fail, assume successful hand-off to Google Server
+      entry.synced = true;
+      save(); 
+      renderGroupedLists(); // Update UI to remove "Pending Sync" badge if shown
+    } catch (e) {
+      console.warn("Offline or sync failed. Will retry later.", e);
+      // Breaks out of loop to wait for next trigger if internet is completely down
+      break; 
+    }
   }
 }
+
+// Ensure the queue syncs when the app opens or comes online
+window.addEventListener('online', syncData);
+setTimeout(syncData, 2000); 
 
 // --- RENDER LOGIC ---
 function getGroupedHtml(scanArray) {
@@ -427,6 +444,7 @@ function getGroupedHtml(scanArray) {
           <div class="scan-row-meta">
             <span class="scan-row-time">${r.time}</span>
             <span class="scan-row-op">OP: ${r.operatorId}</span>
+            ${r.synced === false && r.status !== 'VOID' ? '<span class="sync-badge">Pending Sync</span>' : ''}
           </div>
         </div>
         ${r.status==='VOID' ? 
@@ -479,12 +497,10 @@ function voidScan(id){
   const entry=S.scans.find(s=>s.scanId===id);
   if(!entry)return;
   entry.status='VOID';
+  entry.synced = false; // Mark unsynced so Google Sheets gets the void status update
   save();
   renderGroupedLists();
-  
-  // Send VOID status directly to Google Sheets
-  postToSheet({...entry, status: 'VOID'}); 
-  
+  syncData(); 
   toast('Scan voided');
 }
 
