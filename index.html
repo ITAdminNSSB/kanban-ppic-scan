@@ -11,10 +11,9 @@
   --bg:#F6F8FA;--surface:#FFFFFF;--border:#D0D7DE;--text:#1F2328;
   --muted:#656D76;--accent:#0969DA;--green:#1A7F37;--red:#CF222E;--radius:10px;
 }
-/* Fixed height and viewport for mobile browsers */
 html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden}
 
-/* NAV - Added safe area padding so it doesn't get cut off */
+/* NAV */
 #nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--surface);border-top:1px solid var(--border);z-index:100;height:calc(60px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);}
 .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:11px;cursor:pointer;transition:color .15s}
 .nav-btn.active{color:var(--accent)}
@@ -22,7 +21,7 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 .screen{display:none;position:fixed;top:0;left:0;right:0;bottom:calc(60px + env(safe-area-inset-bottom));overflow-y:auto}
 .screen.active{display:flex;flex-direction:column}
 
-/* LOGIN / ID SCREEN */
+/* LOGIN / ID SCREEN - Enforced Front Page */
 #login-screen{display:flex;position:fixed;inset:0;background:var(--bg);z-index:300;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
 #login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px 24px;width:100%;max-width:360px;text-align:center;box-shadow:0 12px 24px rgba(0,0,0,0.05);}
 .login-title{font-size:20px;font-weight:700;margin-bottom:8px;}
@@ -40,7 +39,7 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 
 /* SCAN SCREEN */
 #scan-screen{background:var(--bg);overflow-x:hidden;}
-#scan-main{flex:1;display:flex;flex-direction:column;padding:12px;gap:12px;max-width:480px;margin:0 auto;width:100%;}
+#scan-main{flex:1;display:flex;flex-direction:column;padding:12px;gap:8px;max-width:480px;margin:0 auto;width:100%;}
 
 /* scan icon */
 #scan-icon-wrap{
@@ -59,22 +58,31 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
   animation:ring 1.5s ease-out infinite;
 }
 
+/* MANUAL INPUT WRAP */
+.manual-wrap { display:flex; gap:8px; margin-bottom: 8px; }
+.manual-inp { flex:1; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px 14px; font-family:'JetBrains Mono',monospace; font-size:14px; outline:none; transition:border-color .2s; }
+.manual-inp:focus { border-color:var(--accent); }
+.manual-btn { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:0 20px; font-size:14px; font-weight:600; cursor:pointer; }
+.manual-btn:active { opacity:0.9; }
+
 /* GROUPED LIST STYLES */
-.list-header{display:flex;align-items:center;justify-content:space-between;padding:8px 4px 4px;}
+.list-header{display:flex;align-items:center;justify-content:space-between;padding:12px 4px 4px;}
 .list-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
 .list-total{font-size:12px;font-weight:700;color:var(--accent)}
 
 .group-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden}
 .group-head{padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;background:var(--surface);}
 .group-badge{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.group-name{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;flex:1;word-break:break-all;line-height:1.3;}
+.group-name{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;flex:1;word-break:break-all;line-height:1.3;}
 .group-count{background:#EBF3FF;color:var(--accent);border-radius:12px;padding:2px 8px;font-size:11px;font-weight:600}
 .group-rows{border-top:1px solid var(--border)}
 .scan-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);background:#FAFAFA;}
 .scan-row:last-child{border-bottom:none}
 .scan-row.voided{opacity:.4}
-.scan-row-left{display:flex;flex-direction:column;gap:3px;}
-.scan-row-time{font-size:12px;font-weight:600;color:var(--text);font-family:'JetBrains Mono',monospace;}
+.scan-row-left{display:flex;flex-direction:column;gap:4px;}
+.scan-row-model{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px; color:var(--text); word-break:break-all;}
+.scan-row-meta{display:flex; gap:10px; align-items:center;}
+.scan-row-time{font-size:11px;font-weight:600;color:var(--muted);font-family:'JetBrains Mono',monospace;}
 .scan-row-op{font-size:10px;color:var(--muted);font-weight:500;}
 .void-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:10px;padding:4px 8px;cursor:pointer;font-weight:600;}
 .void-btn:hover{border-color:var(--red);color:var(--red)}
@@ -114,9 +122,6 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 .s-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-weight:600;font-size:13px;cursor:pointer;margin-right:8px}
 .s-btn.danger{background:var(--red)}
 .s-hint{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6}
-.code-block{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#0550AE;overflow-x:auto;white-space:pre;line-height:1.6;margin-top:8px}
-.copy-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;padding:4px 10px;cursor:pointer;margin-top:8px;font-family:'Inter',sans-serif}
-.copy-btn:hover{border-color:var(--accent);color:var(--accent)}
 .sync-row{display:flex;align-items:center;gap:8px;margin-top:8px}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--border)}
 .sync-dot.ok{background:var(--green)}
@@ -167,6 +172,12 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
         <rect x="7" y="13" width="4" height="4" rx="1"/>
       </svg>
       <div id="scan-ready-text">Scanner Active<br><span style="font-size:12px;font-weight:400">Point at kanban QR</span></div>
+    </div>
+    
+    <!-- MANUAL INPUT SECTION -->
+    <div class="manual-wrap">
+      <input type="text" id="manual-input" class="manual-inp" placeholder="Manual Entry..." autocomplete="off">
+      <button class="manual-btn" onclick="submitManual()">Add</button>
     </div>
 
     <div class="list-header">
@@ -284,9 +295,9 @@ function load(){
     updateSyncStatus('');
   }catch(e){}
 }
-function colorFor(model){
-  if(!S.modelColors[model]){S.modelColors[model]=MODEL_COLORS[S.colorIdx%MODEL_COLORS.length];S.colorIdx++;save();}
-  return S.modelColors[model];
+function colorFor(prefix){
+  if(!S.modelColors[prefix]){S.modelColors[prefix]=MODEL_COLORS[S.colorIdx%MODEL_COLORS.length];S.colorIdx++;save();}
+  return S.modelColors[prefix];
 }
 function todayStr(){
   const d = new Date();
@@ -338,9 +349,11 @@ let scanTimer=null;
 document.addEventListener('keydown', e => {
   const tag = document.activeElement.tagName;
   const id  = document.activeElement.id;
-  if ((tag==='INPUT'||tag==='TEXTAREA') && id!=='scanner-input' && id!=='op-id-login') return;
+  
+  // Allow typing in specific inputs like manual-input, ID login, and google sheets URL
+  if ((tag==='INPUT'||tag==='TEXTAREA') && id!=='scanner-input' && id!=='op-id-login' && id!=='manual-input' && id!=='gs-url') return;
 
-  if (e.key==='Enter') {
+  if (e.key==='Enter' && id !== 'manual-input') {
     clearTimeout(scanTimer);
     const val = scanBuffer;
     scanBuffer = '';
@@ -348,18 +361,35 @@ document.addEventListener('keydown', e => {
     return;
   }
 
-  if (e.key.length === 1) {
+  if (e.key.length === 1 && id !== 'manual-input' && id !== 'op-id-login' && id !== 'gs-url') {
     scanBuffer += e.key;
     clearTimeout(scanTimer);
     scanTimer = setTimeout(() => { scanBuffer = ''; }, 300);
   }
 });
 
+// Manual Submission Logic
+function submitManual() {
+  const val = document.getElementById('manual-input').value.trim();
+  if (val && S.operatorId) {
+    handleScan(val);
+    document.getElementById('manual-input').value = '';
+    keepFocus();
+  } else if (!val) {
+    toast('Please enter a value');
+  }
+}
+
+document.getElementById('manual-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') submitManual();
+});
+
 const scannerInput = document.getElementById('scanner-input');
 function keepFocus(){
   if (!S.operatorId) return;
   const id = document.activeElement.id;
-  if(id!=='gs-url' && id!=='scanner-input'){
+  // Let the user click and type into manual input or settings safely
+  if(id!=='gs-url' && id!=='scanner-input' && id!=='manual-input' && id!=='op-id-login'){
     scannerInput.focus();
   }
 }
@@ -418,18 +448,20 @@ function renderGroupedLists(){
     return;
   }
 
+  // Group by the first 4 characters of the model
   const groups = {};
   today.forEach(s => {
-    const m = s.model; 
-    if(!groups[m]) groups[m] = [];
-    groups[m].push(s);
+    // If the model string is less than 4 chars, we group by the whole model string
+    const prefix = s.model.length >= 4 ? s.model.substring(0, 4).toUpperCase() : s.model.toUpperCase();
+    if(!groups[prefix]) groups[prefix] = [];
+    groups[prefix].push(s);
   });
 
-  const sortedModels = Object.keys(groups).sort((a, b) => a.localeCompare(b));
+  const sortedPrefixes = Object.keys(groups).sort((a, b) => a.localeCompare(b));
 
-  const html = sortedModels.map(model => {
-    const rows = groups[model];
-    const col = colorFor(model);
+  const html = sortedPrefixes.map(prefix => {
+    const rows = groups[prefix];
+    const col = colorFor(prefix);
     const activeCount = rows.filter(r => r.status !== 'VOID').length;
     
     rows.sort((a,b) => b.time.localeCompare(a.time));
@@ -437,8 +469,11 @@ function renderGroupedLists(){
     const rowsHtml = rows.map(r => `
       <div class="scan-row ${r.status==='VOID'?'voided':''}">
         <div class="scan-row-left">
-          <span class="scan-row-time">${r.time}</span>
-          <span class="scan-row-op">OP: ${r.operatorId}</span>
+          <span class="scan-row-model">${r.model}</span>
+          <div class="scan-row-meta">
+            <span class="scan-row-time">${r.time}</span>
+            <span class="scan-row-op">OP: ${r.operatorId}</span>
+          </div>
         </div>
         ${r.status==='VOID' ? 
           '<span class="void-label">VOID</span>' : 
@@ -450,7 +485,7 @@ function renderGroupedLists(){
       <div class="group-card">
         <div class="group-head">
           <div class="group-badge" style="background:${col}"></div>
-          <div class="group-name" style="color:${col}">${model}</div>
+          <div class="group-name" style="color:${col}">Category: ${prefix}</div>
           <span class="group-count">${activeCount}</span>
         </div>
         <div class="group-rows">${rowsHtml}</div>
@@ -499,8 +534,6 @@ function showScreen(name){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   
   const scr=document.getElementById(name+'-screen');
-  
-  // Handles the nav button styling depending on which page we are on
   let btnId = 'nav-' + name;
   if(name === 'settings') btnId = 'nav-settings-btn';
   const btn = document.getElementById(btnId);
