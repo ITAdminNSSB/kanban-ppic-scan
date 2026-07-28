@@ -21,17 +21,23 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 .screen{display:none;position:fixed;top:0;left:0;right:0;bottom:60px;overflow-y:auto}
 .screen.active{display:flex;flex-direction:column}
 
-/* SCAN SCREEN — fixed layout, never elongates */
+/* SCAN SCREEN */
 #scan-screen{background:var(--bg);overflow:hidden}
 #scan-main{
   flex:1;display:grid;
-  grid-template-rows:auto auto 1fr auto;
+  grid-template-rows:auto auto auto 1fr auto;
   align-items:start;
   padding:12px;gap:10px;
   max-width:480px;margin:0 auto;width:100%;
 }
 
-/* scan icon — compact */
+/* operator id */
+#operator-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;gap:6px;}
+#operator-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+#operator-inp{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;color:var(--text);transition:border-color .2s;}
+#operator-inp:focus{border-color:var(--accent);}
+
+/* scan icon */
 #scan-icon-wrap{
   border-radius:16px;
   background:var(--surface);border:2px dashed var(--border);
@@ -51,12 +57,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 }
 @keyframes ring{0%{opacity:.6;transform:scale(1)}100%{opacity:0;transform:scale(1.05)}}
 
-/* last scan status — single line, truncated */
+/* last scan status */
 #scan-status{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;width:100%;}
 #scan-status-label{font-size:11px;color:var(--muted);margin-bottom:2px}
 #last-scan{font-size:12px;font-weight:600;color:var(--text);font-family:'JetBrains Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* model tabs — wrapping rectangle tabs, fills remaining space */
+/* model tabs */
 #chips-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;width:100%;display:flex;flex-direction:column;min-height:0}
 #chips-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border)}
 #chips-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
@@ -114,10 +120,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 .scan-row:last-child{border-bottom:none}
 .scan-row.voided{opacity:.35}
 .scan-row-model{font-size:12px;font-family:'JetBrains Mono',monospace;font-weight:600;flex:1}
+.scan-row-details{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
+.scan-row-op{font-size:10px;color:var(--accent);font-weight:600;}
 .scan-row-time{font-size:11px;color:var(--muted)}
-.void-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:10px;padding:3px 7px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
+.void-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:10px;padding:3px 7px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;margin-left:6px;}
 .void-btn:hover{border-color:var(--red);color:var(--red)}
-.void-label{font-size:10px;color:var(--red);font-family:'JetBrains Mono',monospace}
+.void-label{font-size:10px;color:var(--red);font-family:'JetBrains Mono',monospace;margin-left:6px;}
 #empty-today{text-align:center;color:var(--muted);font-size:14px;padding:48px 24px}
 #empty-today svg{width:40px;height:40px;opacity:.25;display:block;margin:0 auto 12px}
 
@@ -164,6 +172,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
   <input id="scanner-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 
   <div id="scan-main">
+    
+    <div id="operator-wrap">
+      <div id="operator-label">Operator ID</div>
+      <input id="operator-inp" type="text" placeholder="Scan or type ID..." autocomplete="off">
+    </div>
+
     <div id="scan-icon-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/>
@@ -261,11 +275,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
   var data = JSON.parse(raw);
 
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['ScanID','Model','RawData','Date','Time','Status']);
+    sheet.appendRow(['ScanID', 'OperatorID', 'Model', 'RawData', 'Date', 'Time', 'Status']);
   }
 
   sheet.appendRow([
-    data.scanId, data.model, data.rawData,
+    data.scanId, data.operatorId || '', data.model, data.rawData,
     data.date,   data.time,  data.status || 'OK'
   ]);
 
@@ -331,19 +345,19 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 
 <script>
 const MODEL_COLORS=['#0969DA','#1A7F37','#9A3412','#92400E','#6D28D9','#0E7490','#BE185D','#B45309'];
-let S={scans:[],gsUrl:'',groupBy:'model',modelColors:{},colorIdx:0};
+let S={scans:[],gsUrl:'',groupBy:'model',modelColors:{},colorIdx:0,operatorId:''};
 
-function save(){localStorage.setItem('kanban_s',JSON.stringify({scans:S.scans,gsUrl:S.gsUrl,modelColors:S.modelColors,colorIdx:S.colorIdx}));}
+function save(){localStorage.setItem('kanban_s',JSON.stringify({scans:S.scans,gsUrl:S.gsUrl,modelColors:S.modelColors,colorIdx:S.colorIdx,operatorId:S.operatorId}));}
 function load(){
   try{
     const d=JSON.parse(localStorage.getItem('kanban_s')||'{}');
-    S.scans=d.scans||[];S.gsUrl=d.gsUrl||'';S.modelColors=d.modelColors||{};S.colorIdx=d.colorIdx||0;
+    S.scans=d.scans||[];S.gsUrl=d.gsUrl||'';S.modelColors=d.modelColors||{};S.colorIdx=d.colorIdx||0;S.operatorId=d.operatorId||'';
     document.getElementById('gs-url').value=S.gsUrl;
+    document.getElementById('operator-inp').value=S.operatorId;
     updateSyncStatus('');
   }catch(e){}
 }
 function colorFor(model){
-  // Key colour by sebangor + kanban (first two parts before |)
   const parts = model.split('|');
   const key = parts.length>=2 ? parts[0].trim()+'|'+parts[1].trim() : parts[0].trim();
   if(!S.modelColors[key]){S.modelColors[key]=MODEL_COLORS[S.colorIdx%MODEL_COLORS.length];S.colorIdx++;save();}
@@ -352,21 +366,34 @@ function colorFor(model){
 function todayStr(){return new Date().toISOString().slice(0,10);}
 function todayScans(){return S.scans.filter(s=>s.date===todayStr());}
 
+// ── OPERATOR ID LOGIC ──
+const opInput = document.getElementById('operator-inp');
+opInput.addEventListener('input', (e) => {
+  S.operatorId = e.target.value.trim();
+  save();
+});
+opInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    S.operatorId = e.target.value.trim();
+    save();
+    opInput.blur();
+    toast('Operator locked in');
+    scannerInput.focus();
+  }
+});
+
+
 // ── HARDWARE SCANNER INPUT ──
-// Scanners type fast (chars arrive in <50ms gaps) then send Enter.
-// We capture keystrokes globally and accumulate them into a buffer.
 let scanBuffer='';
 let scanTimer=null;
-const SCAN_TIMEOUT=100; // ms between chars — scanners are faster than humans
+const SCAN_TIMEOUT=100;
 
 document.addEventListener('keydown', e => {
-  // Ignore if user is typing in a real input (manual entry or settings)
   const tag = document.activeElement.tagName;
   const id  = document.activeElement.id;
   if ((tag==='INPUT'||tag==='TEXTAREA') && id!=='scanner-input') return;
 
   if (e.key==='Enter') {
-    // Scanner finished — process the buffer
     clearTimeout(scanTimer);
     const val = scanBuffer.trim();
     scanBuffer = '';
@@ -374,39 +401,45 @@ document.addEventListener('keydown', e => {
     return;
   }
 
-  // Printable character
   if (e.key.length === 1) {
     scanBuffer += e.key;
     clearTimeout(scanTimer);
-    // If no Enter comes after 300ms, treat as manual stray keypresses — clear
     scanTimer = setTimeout(() => { scanBuffer = ''; }, 300);
   }
 });
 
-// keep hidden input focused so scanner keystokes are always captured on mobile
 const scannerInput = document.getElementById('scanner-input');
 function keepFocus(){
   const id = document.activeElement.id;
-  if(id!=='manual-inp' && id!=='gs-url' && id!=='scanner-input'){
+  if(id!=='manual-inp' && id!=='gs-url' && id!=='scanner-input' && id!=='operator-inp'){
     scannerInput.focus();
   }
 }
 document.addEventListener('click', ()=>setTimeout(keepFocus,50));
 document.addEventListener('touchend', ()=>setTimeout(keepFocus,50));
 
+
 // ── SCAN HANDLER ──
 let flashTimeout;
 let lastScanId='';
 
 function handleScan(raw){
-  // Debounce: ignore duplicate within 1.5s
   if(raw===lastScanId && flashTimeout) return;
   lastScanId=raw;
 
   const model=raw.trim().toUpperCase();
   const now=new Date();
+  
+  // Enforce Operator ID logic (optional: prompt if blank)
+  if(!S.operatorId) {
+    toast('Please enter Operator ID first');
+    document.getElementById('operator-inp').focus();
+    return;
+  }
+
   const entry={
     scanId:'SC-'+Date.now(),
+    operatorId: S.operatorId,
     model,rawData:raw,
     date:now.toISOString().slice(0,10),
     time:now.toTimeString().slice(0,8),
@@ -414,11 +447,9 @@ function handleScan(raw){
   };
   S.scans.push(entry);save();updateScanBar();postToSheet(entry);
 
-  // flash
   document.getElementById('flash-model').textContent=model;
   document.getElementById('flash-time').textContent=entry.time;
   document.getElementById('flash').classList.add('show');
-  // pulse icon
   document.getElementById('scan-icon-wrap').classList.add('active');
 
   clearTimeout(flashTimeout);
@@ -429,7 +460,7 @@ function handleScan(raw){
   },1800);
 }
 
-// manual
+// manual log
 document.getElementById('manual-btn').onclick=()=>{
   const v=document.getElementById('manual-inp').value.trim();
   if(!v)return;
@@ -447,10 +478,9 @@ function updateScanBar(){
   const last=active[active.length-1];
   const lastLabel = last ? (last.model.includes('|') ? last.model.split('|')[0].trim() : last.model) : null;
   document.getElementById('last-scan').textContent=last?`${lastLabel}  ·  ${last.time}`:'—';
-  // count per model
+  
   const counts={};
   active.forEach(s=>{
-    // Group by sebangor + kanban number (first two segments)
     const parts = s.model.split('|');
     const key = parts.length>=2 ? parts[0].trim()+'|'+parts[1].trim() : parts[0].trim();
     counts[key]=(counts[key]||0)+1;
@@ -462,7 +492,6 @@ function updateScanBar(){
     document.getElementById('model-chips').innerHTML='<div style="padding:8px 4px;font-size:11px;color:var(--muted);text-align:center">No scans yet</div>';
     return;
   }
-  // sort by count descending, show count + truncated label
   entries.sort((a,b)=>b[1]-a[1]);
   document.getElementById('model-chips').innerHTML=entries.map(([m,c])=>{
     const col=colorFor(m);
@@ -495,20 +524,32 @@ function renderToday(){
     body.innerHTML=`<div id="empty-today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 15h6"/></svg>No scans recorded today</div>`;
     return;
   }
+  
+  // Sort automatically into models category
   if(S.groupBy==='model'){
     const groups={};
     today.forEach(s=>{if(!groups[s.model])groups[s.model]=[];groups[s.model].push(s);});
-    body.innerHTML=Object.entries(groups).map(([model,rows])=>{
+    
+    // Auto-sort alphabetical by model category
+    const sortedModels = Object.keys(groups).sort();
+    
+    body.innerHTML=sortedModels.map(model=>{
+      const rows = groups[model];
       const col=colorFor(model);
       const active=rows.filter(r=>r.status!=='VOID').length;
       const times=rows.map(r=>r.time).sort();
       const range=times.length>1?`${times[0]} – ${times[times.length-1]}`:times[0];
+      
       const rowsHtml=rows.map(r=>`
         <div class="scan-row${r.status==='VOID'?' voided':''}">
           <span class="scan-row-model" style="color:${col}">${r.model}</span>
-          <span class="scan-row-time">${r.time}</span>
+          <div class="scan-row-details">
+            <span class="scan-row-op">OP: ${r.operatorId || 'Unknown'}</span>
+            <span class="scan-row-time">${r.time}</span>
+          </div>
           ${r.status==='VOID'?'<span class="void-label">VOID</span>':`<button class="void-btn" onclick="voidScan('${r.scanId}')">Void</button>`}
         </div>`).join('');
+        
       return `<div class="group-card">
         <div class="group-head" onclick="this.nextElementSibling.classList.toggle('open')">
           <div class="group-badge" style="background:${col}"></div>
@@ -516,7 +557,7 @@ function renderToday(){
           <span class="group-count">${active}</span>
           <span class="group-range">${range}</span>
         </div>
-        <div class="group-rows">${rowsHtml}</div>
+        <div class="group-rows open">${rowsHtml}</div>
       </div>`;
     }).join('');
   } else {
@@ -526,7 +567,10 @@ function renderToday(){
       return `<div class="scan-row${r.status==='VOID'?' voided':''}">
         <div class="group-badge" style="background:${col};width:8px;height:8px;border-radius:50%;flex-shrink:0"></div>
         <span class="scan-row-model" style="color:${col}">${r.model}</span>
-        <span class="scan-row-time">${r.time}</span>
+        <div class="scan-row-details">
+          <span class="scan-row-op">OP: ${r.operatorId || 'Unknown'}</span>
+          <span class="scan-row-time">${r.time}</span>
+        </div>
         ${r.status==='VOID'?'<span class="void-label">VOID</span>':`<button class="void-btn" onclick="voidScan('${r.scanId}')">Void</button>`}
       </div>`;
     }).join('')}</div></div>`;
@@ -543,7 +587,6 @@ function voidScan(id){
 async function postToSheet(entry){
   if(!S.gsUrl)return;
   try{
-    // Send as GET with data param — bypasses CORS entirely
     const url = S.gsUrl + '?data=' + encodeURIComponent(JSON.stringify(entry));
     await fetch(url, {method:'GET', mode:'no-cors'});
     updateSyncStatus('ok');
@@ -589,7 +632,6 @@ function toast(msg){const el=document.getElementById('toast');el.textContent=msg
 const ADMIN_PIN = '1234'; // change this to your PIN
 let pinBuffer = '';
 
-// Long-press Today button (3s) to open PIN modal
 let lpTimer = null;
 document.getElementById('nav-today').addEventListener('pointerdown', () => {
   lpTimer = setTimeout(() => { openPinModal(); }, 3000);
