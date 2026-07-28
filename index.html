@@ -21,7 +21,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 .screen{display:none;position:fixed;top:0;left:0;right:0;bottom:60px;overflow-y:auto}
 .screen.active{display:flex;flex-direction:column}
 
-/* LOGIN / ID SCREEN (Blocks access until ID is entered) */
+/* LOGIN / ID SCREEN */
 #login-screen{display:flex;position:fixed;inset:0;background:var(--bg);z-index:300;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
 #login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px 24px;width:100%;max-width:360px;text-align:center;box-shadow:0 12px 24px rgba(0,0,0,0.05);}
 .login-title{font-size:20px;font-weight:700;margin-bottom:8px;}
@@ -58,7 +58,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
   animation:ring 1.5s ease-out infinite;
 }
 
-/* GROUPED LIST STYLES (Used on Scan & Today screens) */
+/* GROUPED LIST STYLES */
 .list-header{display:flex;align-items:center;justify-content:space-between;padding:8px 4px 4px;}
 .list-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
 .list-total{font-size:12px;font-weight:700;color:var(--accent)}
@@ -150,7 +150,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
 
 <!-- SCAN SCREEN -->
 <div id="scan-screen" class="screen">
-  <!-- hidden input to catch scanner keystrokes -->
   <input id="scanner-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 
   <!-- Operator Bar -->
@@ -170,7 +169,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
       <div id="scan-ready-text">Scanner Active<br><span style="font-size:12px;font-weight:400">Point at kanban QR</span></div>
     </div>
 
-    <!-- Scanned Models List -->
     <div class="list-header">
       <span class="list-title">Scanned Models</span>
       <span class="list-total" id="scan-total">0 scans</span>
@@ -214,34 +212,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter'
           <div class="sync-dot" id="sync-dot"></div>
           <div class="sync-label" id="sync-label">Not configured</div>
         </div>
-      </div>
-    </div>
-    <div class="s-section">
-      <div class="s-title">Apps Script Code</div>
-      <div class="s-card">
-        <div class="s-label">Paste this into Apps Script:</div>
-        <div class="code-block" id="script-code">function doPost(e) {
-  var sheetId = 'YOUR_SHEET_ID_HERE';
-  var ss = SpreadsheetApp.openById(sheetId);
-  var sheet = ss.getSheetByName('Scans') || ss.getActiveSheet();
-  
-  var raw = '{}';
-  if (e.parameter && e.parameter.data) raw = e.parameter.data;
-  else if (e.postData && e.postData.contents) raw = e.postData.contents;
-  var data = JSON.parse(raw);
-
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['ScanID', 'OperatorID', 'ModelCategory', 'Date', 'Time', 'Status']);
-  }
-
-  sheet.appendRow([
-    data.scanId, data.operatorId, data.model,
-    data.date, data.time, data.status || 'OK'
-  ]);
-
-  return ContentService.createTextResponse(JSON.stringify({result:'OK'})).setMimeType(ContentService.MimeType.JSON);
-}</div>
-        <button class="copy-btn" onclick="copyScript()">Copy code</button>
       </div>
     </div>
     <div class="s-section">
@@ -312,7 +282,19 @@ function colorFor(model){
   if(!S.modelColors[model]){S.modelColors[model]=MODEL_COLORS[S.colorIdx%MODEL_COLORS.length];S.colorIdx++;save();}
   return S.modelColors[model];
 }
-function todayStr(){return new Date().toISOString().slice(0,10);}
+
+/* --- FIXED: TIMEZONE ACCURACY --- */
+/* Forces the app to use your LOCAL timezone (e.g. UTC+8) instead of default UTC, 
+   preventing morning scans from disappearing into "yesterday" */
+function todayStr(){
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0,10);
+}
+function timeStr(){
+  const d = new Date();
+  return d.toTimeString().slice(0,8);
+}
 function todayScans(){return S.scans.filter(s=>s.date===todayStr());}
 
 // ── LOGIN / OPERATOR ID SYSTEM ──
@@ -339,7 +321,6 @@ function submitLogin() {
   toast('ID Locked. Ready to scan.');
 }
 
-// Allow pressing enter on login field
 document.getElementById('op-id-login').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') submitLogin();
 });
@@ -357,14 +338,13 @@ let scanTimer=null;
 document.addEventListener('keydown', e => {
   const tag = document.activeElement.tagName;
   const id  = document.activeElement.id;
-  // Ignore if user is typing in settings or login
   if ((tag==='INPUT'||tag==='TEXTAREA') && id!=='scanner-input' && id!=='op-id-login') return;
 
   if (e.key==='Enter') {
     clearTimeout(scanTimer);
-    const val = scanBuffer.trim();
+    const val = scanBuffer;
     scanBuffer = '';
-    if (val.length > 0 && S.operatorId) handleScan(val); // Only process if logged in
+    if (val.trim().length > 0 && S.operatorId) handleScan(val);
     return;
   }
 
@@ -377,7 +357,7 @@ document.addEventListener('keydown', e => {
 
 const scannerInput = document.getElementById('scanner-input');
 function keepFocus(){
-  if (!S.operatorId) return; // don't steal focus if on login screen
+  if (!S.operatorId) return;
   const id = document.activeElement.id;
   if(id!=='gs-url' && id!=='scanner-input'){
     scannerInput.focus();
@@ -394,22 +374,24 @@ function handleScan(raw){
   if(raw===lastScanId && flashTimeout) return;
   lastScanId=raw;
 
-  const model=raw.trim().toUpperCase();
-  const now=new Date();
+  /* --- FIXED: SCANNER SANITIZATION --- */
+  /* Aggressively removes hidden characters (\r, \n) and trailing spaces that 
+     hardware scanners often inject, which prevents groups from stacking properly */
+  const model = raw.replace(/[\r\n\t]+/g, '').trim().toUpperCase();
+  if(!model) return;
   
   const entry={
     scanId:'SC-'+Date.now(),
     operatorId: S.operatorId,
     model: model,
-    date:now.toISOString().slice(0,10),
-    time:now.toTimeString().slice(0,8),
+    date: todayStr(),
+    time: timeStr(),
     status:'OK'
   };
   S.scans.push(entry);save();
   renderGroupedLists();
   postToSheet(entry);
 
-  // UI Flash
   document.getElementById('flash-model').textContent=model;
   document.getElementById('flash').classList.add('show');
   document.getElementById('scan-icon-wrap').classList.add('active');
@@ -422,13 +404,12 @@ function handleScan(raw){
   },1200);
 }
 
-// ── GROUPING & RENDERING (SORTED BY CATEGORY) ──
+// ── GROUPING & RENDERING ──
 function renderGroupedLists(){
   const today = todayScans();
   const active = today.filter(s => s.status !== 'VOID');
   const voided = today.filter(s => s.status === 'VOID');
   
-  // Update totals
   document.getElementById('scan-total').textContent = `${active.length} scan${active.length!==1?'s':''}`;
   document.getElementById('today-sub').textContent = `${new Date().toLocaleDateString('en-MY',{weekday:'long',day:'numeric',month:'short'})}  ·  ${active.length} scans${voided.length?'  ·  '+voided.length+' voided':''}`;
 
@@ -442,23 +423,23 @@ function renderGroupedLists(){
     return;
   }
 
-  // 1. Group by model category
+  /* --- FIXED: PRECISE GROUPING & SORTING --- */
   const groups = {};
   today.forEach(s => {
-    if(!groups[s.model]) groups[s.model] = [];
-    groups[s.model].push(s);
+    const m = s.model; // sanitized at scan-time
+    if(!groups[m]) groups[m] = [];
+    groups[m].push(s);
   });
 
-  // 2. Sort model categories alphabetically
-  const sortedModels = Object.keys(groups).sort();
+  // Sort model categories strictly Alphabetically (A to Z)
+  const sortedModels = Object.keys(groups).sort((a, b) => a.localeCompare(b));
 
-  // 3. Build HTML
   const html = sortedModels.map(model => {
     const rows = groups[model];
     const col = colorFor(model);
     const activeCount = rows.filter(r => r.status !== 'VOID').length;
     
-    // Sort rows newest first inside the category
+    // Sort items inside the category newest first
     rows.sort((a,b) => b.time.localeCompare(a.time));
 
     const rowsHtml = rows.map(r => `
@@ -485,7 +466,6 @@ function renderGroupedLists(){
     `;
   }).join('');
 
-  // Inject same HTML into both screens for consistency
   containerScan.innerHTML = html;
   containerToday.innerHTML = html;
 }
@@ -515,9 +495,6 @@ function updateSyncStatus(state){
   if(state==='ok'){dot.className='sync-dot ok';lbl.textContent='Connected';return;}
   if(state==='err'){dot.className='sync-dot err';lbl.textContent='Sync failed — check URL';return;}
   dot.className='sync-dot ok pulse';lbl.textContent='URL saved — will sync on next scan';
-}
-function copyScript(){
-  navigator.clipboard.writeText(document.getElementById('script-code').textContent).then(()=>toast('Code copied')).catch(()=>toast('Copy failed'));
 }
 function clearData(){
   if(!confirm('Clear all local scan data?'))return;
@@ -586,7 +563,7 @@ function checkPin() {
 // ── INIT ──
 load();
 renderGroupedLists();
-checkLogin(); // Triggers the lock screen if no ID is set
+checkLogin();
 </script>
 </body>
 </html>
