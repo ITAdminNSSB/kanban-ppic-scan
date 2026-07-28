@@ -21,7 +21,6 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 #login-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:32px 24px;width:100%;max-width:360px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.05);}
 .login-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;}
 .login-sub{font-size:12px;color:var(--muted);margin-bottom:24px;}
-/* Input styled to match your screenshot */
 .login-inp{width:100%;background:var(--surface);border:1px solid var(--accent);border-radius:6px;padding:12px;font-family:'JetBrains Mono',monospace;font-size:14px;text-align:center;outline:none;margin-bottom:16px;color:var(--text); transition:box-shadow .2s;}
 .login-inp:focus{box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);}
 .login-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:6px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;}
@@ -89,7 +88,6 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 .void-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:10px;padding:4px 10px;cursor:pointer;font-weight:600;}
 .void-btn:hover{border-color:var(--red);color:var(--red)}
 .void-label{font-size:10px;color:var(--red);font-family:'JetBrains Mono',monospace;font-weight:600;}
-.sync-badge{font-size:9px; color:var(--accent); border:1px solid var(--accent); border-radius:4px; padding:1px 4px; font-weight:bold;}
 
 /* Hidden scanner input */
 #scanner-input{position:absolute;opacity:0;width:1px;height:1px;top:-999px;}
@@ -241,8 +239,7 @@ function load(){
     S.modelColors = d.modelColors || {};
     S.colorIdx = d.colorIdx || 0;
     
-    // THIS LINE FORCES THE APP TO NEVER REMEMBER THE ID.
-    // IT GUARANTEES THE LOGIN PAGE IS ALWAYS SHOWN ON REFRESH.
+    // FORCES THE LOGIN PAGE TO ALWAYS BE SHOWN ON REFRESH.
     S.operatorId = ''; 
     
     document.getElementById('history-date').value = todayStr();
@@ -366,16 +363,15 @@ function handleScan(raw){
     model: model,
     date: todayStr(),
     time: timeStr(),
-    status:'OK',
-    synced: false // Flag to ensure it syncs to Google Sheets
+    status:'OK'
   };
   
   S.scans.push(entry);
   save();
   renderGroupedLists();
   
-  // Trigger background sync
-  syncData();
+  // SEND IMMEDIATELY TO GOOGLE SHEETS
+  postToSheet(entry);
 
   // Flash UI
   document.getElementById('flash-model').textContent=model;
@@ -390,33 +386,16 @@ function handleScan(raw){
   },1200);
 }
 
-// --- GOOGLE SHEETS AUTOMATED BACKGROUND SYNC ---
-async function syncData() {
-  if (!https://script.google.com/macros/s/AKfycbyEgfRX889rQXPM4DFP3VNnc4DYFzV6iDewoE2MFbArOM_QA2Q-bgfiKU1WUAK9kExwzg/exec) return; // Ignore if URL not set
-  
-  // Find all scans that haven't been successfully sent to Google Sheets
-  const pendingScans = S.scans.filter(s => s.synced === false);
-  
-  for (let entry of pendingScans) {
-    try {
-      const url = https://script.google.com/macros/s/AKfycbyEgfRX889rQXPM4DFP3VNnc4DYFzV6iDewoE2MFbArOM_QA2Q-bgfiKU1WUAK9kExwzg/exec + '?data=' + encodeURIComponent(JSON.stringify(entry));
-      await fetch(url, { method: 'GET', mode: 'no-cors' });
-      
-      // If network doesn't fail, assume successful hand-off to Google Server
-      entry.synced = true;
-      save(); 
-      renderGroupedLists(); // Update UI to remove "Pending Sync" badge if shown
-    } catch (e) {
-      console.warn("Offline or sync failed. Will retry later.", e);
-      // Breaks out of loop to wait for next trigger if internet is completely down
-      break; 
-    }
+// --- GOOGLE SHEETS SIMPLE SYNC ---
+async function postToSheet(entry) {
+  if (!https://script.google.com/macros/s/AKfycbyEgfRX889rQXPM4DFP3VNnc4DYFzV6iDewoE2MFbArOM_QA2Q-bgfiKU1WUAK9kExwzg/exec) return; 
+  try {
+    const url = https://script.google.com/macros/s/AKfycbyEgfRX889rQXPM4DFP3VNnc4DYFzV6iDewoE2MFbArOM_QA2Q-bgfiKU1WUAK9kExwzg/exec + '?data=' + encodeURIComponent(JSON.stringify(entry));
+    await fetch(url, { method: 'GET', mode: 'no-cors' });
+  } catch (e) {
+    console.log("Sync error: ", e);
   }
 }
-
-// Ensure the queue syncs when the app opens or comes online
-window.addEventListener('online', syncData);
-setTimeout(syncData, 2000); 
 
 // --- RENDER LOGIC ---
 function getGroupedHtml(scanArray) {
@@ -448,7 +427,6 @@ function getGroupedHtml(scanArray) {
           <div class="scan-row-meta">
             <span class="scan-row-time">${r.time}</span>
             <span class="scan-row-op">OP: ${r.operatorId}</span>
-            ${r.synced === false && r.status !== 'VOID' ? '<span class="sync-badge">Pending Sync</span>' : ''}
           </div>
         </div>
         ${r.status==='VOID' ? 
@@ -501,10 +479,12 @@ function voidScan(id){
   const entry=S.scans.find(s=>s.scanId===id);
   if(!entry)return;
   entry.status='VOID';
-  entry.synced = false; // Mark unsynced so Google Sheets gets the void status update
   save();
   renderGroupedLists();
-  syncData(); 
+  
+  // Send VOID status directly to Google Sheets
+  postToSheet({...entry, status: 'VOID'}); 
+  
   toast('Scan voided');
 }
 
