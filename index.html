@@ -21,7 +21,7 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 .screen{display:none;position:fixed;top:0;left:0;right:0;bottom:calc(60px + env(safe-area-inset-bottom));overflow-y:auto}
 .screen.active{display:flex;flex-direction:column}
 
-/* LOGIN / ID SCREEN - Enforced Front Page */
+/* LOGIN / ID SCREEN - STRICT FRONT PAGE */
 #login-screen{display:flex;position:fixed;inset:0;background:var(--bg);z-index:300;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
 #login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px 24px;width:100%;max-width:360px;text-align:center;box-shadow:0 12px 24px rgba(0,0,0,0.05);}
 .login-title{font-size:20px;font-weight:700;margin-bottom:8px;}
@@ -87,6 +87,7 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 .void-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:10px;padding:4px 8px;cursor:pointer;font-weight:600;}
 .void-btn:hover{border-color:var(--red);color:var(--red)}
 .void-label{font-size:10px;color:var(--red);font-family:'JetBrains Mono',monospace;font-weight:600;}
+.sync-badge {font-size:9px; color:var(--accent); border:1px solid var(--accent); border-radius:4px; padding:1px 4px; font-weight:bold;}
 
 /* hidden scanner input */
 #scanner-input{position:absolute;opacity:0;width:1px;height:1px;top:-999px;}
@@ -111,26 +112,6 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 .history-body{padding:12px;max-width:480px;margin:0 auto;width:100%;}
 #empty-state{text-align:center;color:var(--muted);font-size:14px;padding:48px 24px}
 #empty-state svg{width:40px;height:40px;opacity:.25;display:block;margin:0 auto 12px}
-
-/* SETTINGS SCREEN */
-#settings-screen{background:var(--bg)}
-.settings-wrap{padding:16px;max-width:600px;margin:0 auto}
-.s-section{margin-bottom:24px}
-.s-title{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
-.s-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
-.s-label{font-size:13px;color:var(--text);margin-bottom:6px;display:block}
-.s-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:9px 12px;outline:none;margin-bottom:10px}
-.s-input:focus{border-color:var(--accent)}
-.s-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-weight:600;font-size:13px;cursor:pointer;margin-right:8px}
-.s-btn.danger{background:var(--red)}
-.s-hint{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6}
-.sync-row{display:flex;align-items:center;gap:8px;margin-top:8px}
-.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--border)}
-.sync-dot.ok{background:var(--green)}
-.sync-dot.err{background:var(--red)}
-.sync-dot.pulse{animation:pulse 1.5s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.sync-label{font-size:12px;color:var(--muted)}
 
 /* toast */
 #toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#1F2328;border:1px solid #444;border-radius:8px;padding:10px 18px;font-size:13px;color:#fff;z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
@@ -207,32 +188,6 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
   </div>
 </div>
 
-<!-- SETTINGS SCREEN -->
-<div id="settings-screen" class="screen">
-  <div class="settings-wrap">
-    <div class="s-section">
-      <div class="s-title">Google Sheets Sync</div>
-      <div class="s-card">
-        <label class="s-label">Apps Script Web App URL</label>
-        <input class="s-input" id="gs-url" type="url" placeholder="https://script.google.com/macros/s/…/exec">
-        <button class="s-btn" onclick="saveGsUrl()">Save URL</button>
-        <div class="sync-row">
-          <div class="sync-dot" id="sync-dot"></div>
-          <div class="sync-label" id="sync-label">Not configured</div>
-        </div>
-      </div>
-    </div>
-    <div class="s-section">
-      <div class="s-title">Data Management</div>
-      <div class="s-card">
-        <div class="s-label">Local storage</div>
-        <div class="s-hint" style="margin-bottom:10px" id="data-count">—</div>
-        <button class="s-btn danger" onclick="clearData()">Clear local data</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- EXPLICIT BOTTOM NAV MENU -->
 <nav id="nav" style="display:none;">
   <button class="nav-btn active" id="nav-scan" onclick="showScreen('scan')">
@@ -243,34 +198,34 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
     History
   </button>
-  <button class="nav-btn" id="nav-settings" onclick="showScreen('settings')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-      <circle cx="12" cy="12" r="3"></circle>
-      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"></path>
-    </svg>
-    Settings
-  </button>
 </nav>
 
 <div id="toast"></div>
 
 <script>
+// =========================================================
+// GOOGLE SHEETS SETUP 
+// Paste your Google Apps Script Web App URL below
+// =========================================================
+const GOOGLE_APPS_SCRIPT_URL = ""; 
+
 const MODEL_COLORS=['#0969DA','#1A7F37','#9A3412','#92400E','#6D28D9','#0E7490','#BE185D','#B45309'];
-let S={scans:[],gsUrl:'',modelColors:{},colorIdx:0,operatorId:''};
+let S={scans:[], modelColors:{}, colorIdx:0, operatorId:''};
 
 function save(){localStorage.setItem('kanban_s',JSON.stringify(S));}
 function load(){
   try{
     const d=JSON.parse(localStorage.getItem('kanban_s')||'{}');
-    S.scans=d.scans||[];S.gsUrl=d.gsUrl||'';S.modelColors=d.modelColors||{};S.colorIdx=d.colorIdx||0;S.operatorId=d.operatorId||'';
-    document.getElementById('gs-url').value=S.gsUrl;
+    S.scans = d.scans || [];
+    S.modelColors = d.modelColors || {};
+    S.colorIdx = d.colorIdx || 0;
+    S.operatorId = d.operatorId || '';
     
     // Set default date picker to today
     document.getElementById('history-date').value = todayStr();
-    
-    updateSyncStatus('');
   }catch(e){}
 }
+
 function colorFor(prefix){
   if(!S.modelColors[prefix]){S.modelColors[prefix]=MODEL_COLORS[S.colorIdx%MODEL_COLORS.length];S.colorIdx++;save();}
   return S.modelColors[prefix];
@@ -285,6 +240,7 @@ function timeStr(){
   return d.toTimeString().slice(0,8);
 }
 
+// --- LOGIN LOGIC ---
 function checkLogin() {
   if (!S.operatorId) {
     document.getElementById('login-screen').style.display = 'flex';
@@ -318,6 +274,7 @@ function logout() {
   checkLogin();
 }
 
+// --- SCANNING LOGIC ---
 let scanBuffer='';
 let scanTimer=null;
 
@@ -325,8 +282,8 @@ document.addEventListener('keydown', e => {
   const tag = document.activeElement.tagName;
   const id  = document.activeElement.id;
   
-  // Allow typing in specific inputs like manual-input, ID login, and google sheets URL
-  if ((tag==='INPUT'||tag==='TEXTAREA') && id!=='scanner-input' && id!=='op-id-login' && id!=='manual-input' && id!=='gs-url' && id!=='history-date') return;
+  // Allow typing in specific inputs
+  if ((tag==='INPUT'||tag==='TEXTAREA') && id!=='scanner-input' && id!=='op-id-login' && id!=='manual-input' && id!=='history-date') return;
 
   if (e.key==='Enter' && id !== 'manual-input') {
     clearTimeout(scanTimer);
@@ -336,14 +293,13 @@ document.addEventListener('keydown', e => {
     return;
   }
 
-  if (e.key.length === 1 && id !== 'manual-input' && id !== 'op-id-login' && id !== 'gs-url' && id !== 'history-date') {
+  if (e.key.length === 1 && id !== 'manual-input' && id !== 'op-id-login' && id !== 'history-date') {
     scanBuffer += e.key;
     clearTimeout(scanTimer);
     scanTimer = setTimeout(() => { scanBuffer = ''; }, 300);
   }
 });
 
-// Manual Submission Logic
 function submitManual() {
   const val = document.getElementById('manual-input').value.trim();
   if (val && S.operatorId) {
@@ -363,8 +319,7 @@ const scannerInput = document.getElementById('scanner-input');
 function keepFocus(){
   if (!S.operatorId) return;
   const id = document.activeElement.id;
-  // Let the user click and type into manual input or settings safely
-  if(id!=='gs-url' && id!=='scanner-input' && id!=='manual-input' && id!=='op-id-login' && id!=='history-date'){
+  if(id!=='scanner-input' && id!=='manual-input' && id!=='op-id-login' && id!=='history-date'){
     scannerInput.focus();
   }
 }
@@ -387,12 +342,18 @@ function handleScan(raw){
     model: model,
     date: todayStr(),
     time: timeStr(),
-    status:'OK'
+    status:'OK',
+    synced: false // Flag to ensure it syncs to Google Sheets
   };
-  S.scans.push(entry);save();
+  
+  S.scans.push(entry);
+  save();
   renderGroupedLists();
-  postToSheet(entry);
+  
+  // Trigger background sync
+  syncData();
 
+  // Flash UI
   document.getElementById('flash-model').textContent=model;
   document.getElementById('flash').classList.add('show');
   document.getElementById('scan-icon-wrap').classList.add('active');
@@ -405,6 +366,35 @@ function handleScan(raw){
   },1200);
 }
 
+// --- GOOGLE SHEETS AUTOMATED BACKGROUND SYNC ---
+async function syncData() {
+  if (!GOOGLE_APPS_SCRIPT_URL) return; // Ignore if URL not set
+  
+  // Find all scans that haven't been successfully sent to Google Sheets
+  const pendingScans = S.scans.filter(s => s.synced === false);
+  
+  for (let entry of pendingScans) {
+    try {
+      const url = GOOGLE_APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(entry));
+      await fetch(url, { method: 'GET', mode: 'no-cors' });
+      
+      // If network doesn't fail, assume successful hand-off to Google Server
+      entry.synced = true;
+      save(); 
+      renderGroupedLists(); // Update UI to remove "Pending Sync" badge if shown
+    } catch (e) {
+      console.warn("Offline or sync failed. Will retry later.", e);
+      // Breaks out of loop to wait for next trigger if internet is completely down
+      break; 
+    }
+  }
+}
+
+// Ensure the queue syncs when the app opens
+window.addEventListener('online', syncData);
+setTimeout(syncData, 2000); 
+
+// --- RENDER LOGIC ---
 function getGroupedHtml(scanArray) {
   if (scanArray.length === 0) {
     return `<div id="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 15h6"/></svg>No scans recorded</div>`;
@@ -434,6 +424,7 @@ function getGroupedHtml(scanArray) {
           <div class="scan-row-meta">
             <span class="scan-row-time">${r.time}</span>
             <span class="scan-row-op">OP: ${r.operatorId}</span>
+            ${r.synced === false && r.status !== 'VOID' ? '<span class="sync-badge">Pending Sync</span>' : ''}
           </div>
         </div>
         ${r.status==='VOID' ? 
@@ -485,33 +476,12 @@ document.getElementById('history-date').addEventListener('change', renderGrouped
 function voidScan(id){
   const entry=S.scans.find(s=>s.scanId===id);
   if(!entry)return;
-  entry.status='VOID';save();
+  entry.status='VOID';
+  entry.synced = false; // Mark unsynced so Google Sheets gets the void status update
+  save();
   renderGroupedLists();
-  postToSheet({...entry,status:'VOID'});
+  syncData(); 
   toast('Scan voided');
-}
-
-async function postToSheet(entry){
-  if(!S.gsUrl)return;
-  try{
-    const url = S.gsUrl + '?data=' + encodeURIComponent(JSON.stringify(entry));
-    await fetch(url, {method:'GET', mode:'no-cors'});
-    updateSyncStatus('ok');
-  }catch(e){updateSyncStatus('err');}
-}
-function saveGsUrl(){S.gsUrl=document.getElementById('gs-url').value.trim();save();updateSyncStatus('');toast('URL saved');}
-function updateSyncStatus(state){
-  const dot=document.getElementById('sync-dot'),lbl=document.getElementById('sync-label');
-  if(!S.gsUrl){dot.className='sync-dot';lbl.textContent='Not configured';return;}
-  if(state==='ok'){dot.className='sync-dot ok';lbl.textContent='Connected';return;}
-  if(state==='err'){dot.className='sync-dot err';lbl.textContent='Sync failed — check URL';return;}
-  dot.className='sync-dot ok pulse';lbl.textContent='URL saved — will sync on next scan';
-}
-function clearData(){
-  if(!confirm('Clear all local scan data?'))return;
-  S.scans=[];save();renderGroupedLists();
-  document.getElementById('data-count').textContent='0 scans stored locally';
-  toast('Data cleared');
 }
 
 function showScreen(name){
@@ -524,12 +494,7 @@ function showScreen(name){
   if(scr) scr.classList.add('active');
   if(btn) btn.classList.add('active');
   
-  if(name === 'settings') {
-    document.getElementById('data-count').textContent = S.scans.length + ' scans stored locally';
-  }
-  if(name === 'scan') {
-    setTimeout(() => keepFocus(), 100);
-  }
+  if(name === 'scan') setTimeout(() => keepFocus(), 100);
 }
 
 let toastT;
