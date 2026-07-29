@@ -167,7 +167,7 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 
 <script>
 // =========================================================
-// 🔴 STEP 1: PASTE YOUR NEW WEB APP URL HERE 🔴
+// 🔴 PASTE YOUR NEW WEB APP URL HERE 🔴
 // =========================================================
 const GOOGLE_APPS_SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE"; 
 
@@ -318,36 +318,38 @@ function handleScan(raw){
 }
 
 // =========================================================
-// SEND DATA TO SHEET FUNCTION
+// SEND DATA TO SHEET (NOW USING POST METHOD - CORS SAFE)
 // =========================================================
 function postToSheet(entry) {
-  if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbx0p6Fna4r7XTXZKfUKV4nJL7B1trQUWs9gA3gS7Ww7MgmVUsXoB8th-uruWzeHLvmLDQ/exec") return;
+  if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbx0p6Fna4r7XTXZKfUKV4nJL7B1trQUWs9gA3gS7Ww7MgmVUsXoB8th-uruWzeHLvmLDQ/exec") {
+    console.error("Missing Apps Script URL!");
+    return;
+  }
   
   const category = entry.model.length >= 4 ? entry.model.substring(0, 4).toUpperCase() : entry.model.toUpperCase();
   
-  // Creates standard URL parameters (GET format)
-  const params = new URLSearchParams({
+  const payload = {
     personId: entry.operatorId,
     category: category,
     partsList: entry.model
-  });
+  };
   
-  const finalUrl = GOOGLE_APPS_SCRIPT_URL + "?" + params.toString();
-  
-  // Fetch using 'no-cors' strictly to dispatch the request successfully
-  fetch(finalUrl, { method: 'GET', mode: 'no-cors' })
-    .catch(e => { console.error("Sync error: ", e); });
+  // Sends a text/plain POST request, bypassing CORS blocks
+  fetch(GOOGLE_APPS_SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8'
+    }
+  })
+  .then(response => console.log("Sent successfully!"))
+  .catch(e => console.error("Sync error: ", e));
 }
 
 // =========================================================
 // SYNC ALL (BUTTON) FUNCTION
 // =========================================================
 function syncAllToSheets() {
-  if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === "PASTE_YOUR_WEB_APP_URL_HERE") {
-      toast("Error: Missing Web App URL");
-      return;
-  }
-
   toast("Sending data to Google Sheets...");
   
   if (S.scans.length === 0) {
@@ -355,7 +357,6 @@ function syncAllToSheets() {
       return;
   }
 
-  // Iterates through locally saved scans and fires them off
   S.scans.forEach((entry, index) => {
       setTimeout(() => {
           postToSheet(entry);
