@@ -49,7 +49,7 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 .manual-btn:active { opacity:0.9; }
 
 /* ==================================================
-   UPDATED CSS: Grid layout for PERFECT SQUARES 
+   CSS: Grid layout for PERFECT SQUARES 
    ================================================== */
 .list-header{display:flex;align-items:center;justify-content:space-between;padding:8px 0 12px;}
 .list-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
@@ -73,12 +73,12 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
   justify-content: center;
   align-items: center;
   border: 1.5px solid transparent;
-  aspect-ratio: 1 / 1; /* <-- THIS FORCES IT TO BE A PERFECT SQUARE */
+  aspect-ratio: 1 / 1; /* FORCES IT TO BE A PERFECT SQUARE */
 }
 .model-name {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.3;
   margin-bottom: 6px;
   word-break: break-word;
@@ -195,7 +195,8 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 // =========================================================
 const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0D2tDrHTyKwDloiXHyiZyxHMPX4Nv6RdPF30Vf_Z0RUEirDUhfvSx4DR-2gSyucK2Bw/exec"; 
 
-const MODEL_COLORS=['#0969DA','#1A7F37','#9A3412','#92400E','#6D28D9','#0E7490','#BE185D','#B45309'];
+// Added vibrant colors to support mapping requests
+const MODEL_COLORS=['#0969DA', '#1A7F37', '#7C3AED', '#0E7490', '#BE185D', '#B45309', '#4F46E5'];
 let S={scans:[], modelColors:{}, colorIdx:0, operatorId:''};
 
 function save(){localStorage.setItem('kanban_s',JSON.stringify(S));}
@@ -210,10 +211,19 @@ function load(){
   }catch(e){}
 }
 
-function colorFor(prefix){
-  if(!S.modelColors[prefix]){S.modelColors[prefix]=MODEL_COLORS[S.colorIdx%MODEL_COLORS.length];S.colorIdx++;save();}
-  return S.modelColors[prefix];
+function colorFor(model){
+  // Specific Custom Colors Requested
+  if (model.startsWith('G017')) return '#DB2777'; // Pink Color
+  if (model.startsWith('G018')) return '#D97706'; // Yellow Color
+  
+  if(!S.modelColors[model]){
+    S.modelColors[model]=MODEL_COLORS[S.colorIdx%MODEL_COLORS.length];
+    S.colorIdx++;
+    save();
+  }
+  return S.modelColors[model];
 }
+
 function todayStr(){
   const d = new Date();
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
@@ -312,13 +322,18 @@ function handleScan(raw){
   if(raw===lastScanId && flashTimeout) return;
   lastScanId=raw;
 
-  const model = raw.replace(/[\r\n\t]+/g, '').trim().toUpperCase();
+  let model = raw.replace(/[\r\n\t]+/g, '').trim().toUpperCase();
+  
+  // TRUNCATE: Keeps only the sebango up to the dash, ignores anything after space or |
+  // E.g., "G017-0 | 63" becomes "G017-0"
+  model = model.split(/[\s|]+/)[0];
+
   if(!model) return;
   
   const entry={
     scanId:'SC-'+Date.now(),
     operatorId: S.operatorId,
-    model: model,
+    model: model, // This now saves only the short version
     date: todayStr(),
     time: timeStr()
   };
@@ -380,7 +395,7 @@ function getGroupedHtml(scanArray) {
     return `<div id="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 15h6"/></svg>No scans recorded</div>`;
   }
   
-  // Group by the exact scanned item
+  // Group by the exact shortened model
   const groups = {};
   scanArray.forEach(s => {
     const model = s.model;
@@ -388,29 +403,19 @@ function getGroupedHtml(scanArray) {
     groups[model].push(s);
   });
   
+  // Sort alphabetically - this automatically sorts by color/sebango prefix!
   const sortedModels = Object.keys(groups).sort((a, b) => a.localeCompare(b));
   
   let html = '<div class="models-grid">';
   
   sortedModels.forEach(model => {
     const count = groups[model].length;
-    
-    // Group similar prefixes so they share the same box color (e.g., 1111)
-    const prefix = model.includes('-') ? model.split('-')[0] : (model.length >= 4 ? model.substring(0, 4) : model);
-    const col = colorFor(prefix.toUpperCase()); 
+    const col = colorFor(model); 
     const bgCol = getLightBg(col);
     
-    // Format text inside the square exactly like your photo
-    let displayModel = model;
-    if (displayModel.includes(' | ')) {
-      displayModel = displayModel.replace(' | ', '<br>| ');
-    } else if (displayModel.includes('|')) {
-      displayModel = displayModel.replace('|', '<br>|');
-    }
-
     html += `
       <div class="model-card" style="background-color: ${bgCol}; border-color: ${col}; color: ${col};">
-        <div class="model-name">${displayModel}</div>
+        <div class="model-name">${model}</div>
         <div class="model-count">${count} scan${count !== 1 ? 's' : ''}</div>
       </div>
     `;
