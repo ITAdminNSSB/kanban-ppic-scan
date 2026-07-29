@@ -49,7 +49,7 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 .manual-btn:active { opacity:0.9; }
 
 /* ==================================================
-   UPDATED CSS: Grid layout for scans 
+   UPDATED CSS: Grid layout for PERFECT SQUARES 
    ================================================== */
 .list-header{display:flex;align-items:center;justify-content:space-between;padding:8px 0 12px;}
 .list-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
@@ -58,31 +58,28 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 .models-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
-@media (max-width: 600px) {
+@media (max-width: 500px) {
   .models-grid { grid-template-columns: repeat(3, 1fr); }
-}
-@media (max-width: 400px) {
-  .models-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 .model-card {
-  border-radius: var(--radius);
-  padding: 12px 6px;
+  border-radius: 10px;
+  padding: 8px;
   text-align: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   border: 1.5px solid transparent;
-  min-height: 85px;
+  aspect-ratio: 1 / 1; /* <-- THIS FORCES IT TO BE A PERFECT SQUARE */
 }
 .model-name {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.3;
   margin-bottom: 6px;
   word-break: break-word;
 }
@@ -366,7 +363,7 @@ function postToSheet(entry) {
 }
 
 // =========================================================
-// UPDATED RENDER & UI LOGIC
+// RENDER SQUARES LOGIC
 // =========================================================
 
 // Helper function to get a subtle, light background derived from the border color
@@ -383,7 +380,7 @@ function getGroupedHtml(scanArray) {
     return `<div id="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 15h6"/></svg>No scans recorded</div>`;
   }
   
-  // Group by the EXACT scanned model instead of just the prefix
+  // Group by the exact scanned item
   const groups = {};
   scanArray.forEach(s => {
     const model = s.model;
@@ -397,10 +394,13 @@ function getGroupedHtml(scanArray) {
   
   sortedModels.forEach(model => {
     const count = groups[model].length;
-    const col = colorFor(model); // Keep user's unique colors based on model string
+    
+    // Group similar prefixes so they share the same box color (e.g., 1111)
+    const prefix = model.includes('-') ? model.split('-')[0] : (model.length >= 4 ? model.substring(0, 4) : model);
+    const col = colorFor(prefix.toUpperCase()); 
     const bgCol = getLightBg(col);
     
-    // Format the text string: if the string contains a pipe "|", push it down a line to match image_803e5f.jpg exactly
+    // Format text inside the square exactly like your photo
     let displayModel = model;
     if (displayModel.includes(' | ')) {
       displayModel = displayModel.replace(' | ', '<br>| ');
