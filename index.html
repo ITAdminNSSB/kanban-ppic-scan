@@ -141,6 +141,7 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
     <div class="history-header">
       <div class="history-title-row">
         <div class="history-title">Scan History</div>
+        <!-- Manual Sync Button -->
         <button class="sync-btn" onclick="syncAllToSheets()">SYNC TO SHEETS</button>
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
@@ -166,9 +167,9 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 
 <script>
 // =========================================================
-// 🔴 TAMPAL URL WEB APP DARI SHEET BARU KAU KAT SINI 🔴
+// 🔴 STEP 1: PASTE YOUR NEW WEB APP URL HERE 🔴
 // =========================================================
-const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkEHeJpRcNGjur2LfvXL8okzJuZIzCbjzd6NokS3EHhqrAOItyCyhyP1EkNlUzwxzjeg/exec"; 
+const GOOGLE_APPS_SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE"; 
 
 const MODEL_COLORS=['#0969DA','#1A7F37','#9A3412','#92400E','#6D28D9','#0E7490','#BE185D','#B45309'];
 let S={scans:[], modelColors:{}, colorIdx:0, operatorId:''};
@@ -214,7 +215,7 @@ function checkLogin() {
 
 function submitLogin() {
   const val = document.getElementById('op-id-login').value.trim();
-  if (!val) { toast('Sila masukkan ID'); return; }
+  if (!val) { toast('Please enter an ID'); return; }
   S.operatorId = val;
   save();
   document.getElementById('op-id-login').value = '';
@@ -261,7 +262,7 @@ function submitManual() {
     document.getElementById('manual-input').value = '';
     keepFocus();
   } else if (!val) {
-    toast('Sila masukkan maklumat');
+    toast('Please enter a value');
   }
 }
 
@@ -317,13 +318,14 @@ function handleScan(raw){
 }
 
 // =========================================================
-// HANTAR DATA KE GOOGLE SHEETS
+// SEND DATA TO SHEET FUNCTION
 // =========================================================
 function postToSheet(entry) {
-  if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbzkEHeJpRcNGjur2LfvXL8okzJuZIzCbjzd6NokS3EHhqrAOItyCyhyP1EkNlUzwxzjeg/exec") return;
+  if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbx0p6Fna4r7XTXZKfUKV4nJL7B1trQUWs9gA3gS7Ww7MgmVUsXoB8th-uruWzeHLvmLDQ/exec") return;
   
   const category = entry.model.length >= 4 ? entry.model.substring(0, 4).toUpperCase() : entry.model.toUpperCase();
   
+  // Creates standard URL parameters (GET format)
   const params = new URLSearchParams({
     personId: entry.operatorId,
     category: category,
@@ -332,35 +334,45 @@ function postToSheet(entry) {
   
   const finalUrl = GOOGLE_APPS_SCRIPT_URL + "?" + params.toString();
   
+  // Fetch using 'no-cors' strictly to dispatch the request successfully
   fetch(finalUrl, { method: 'GET', mode: 'no-cors' })
     .catch(e => { console.error("Sync error: ", e); });
 }
 
 // =========================================================
-// FUNGSI BUTANG SYNC
+// SYNC ALL (BUTTON) FUNCTION
 // =========================================================
 function syncAllToSheets() {
-  toast("Hantar data ke Sheets...");
-  
-  if (S.scans.length === 0) {
-      setTimeout(() => toast("Tiada rekod untuk dihantar."), 1000);
+  if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === "PASTE_YOUR_WEB_APP_URL_HERE") {
+      toast("Error: Missing Web App URL");
       return;
   }
 
+  toast("Sending data to Google Sheets...");
+  
+  if (S.scans.length === 0) {
+      setTimeout(() => toast("No data to send."), 1000);
+      return;
+  }
+
+  // Iterates through locally saved scans and fires them off
   S.scans.forEach((entry, index) => {
       setTimeout(() => {
           postToSheet(entry);
-      }, index * 300); 
+      }, index * 300); // 300ms delay prevents Google from rate-limiting the requests
   });
 
   setTimeout(() => {
-      toast("Siap! Check Google Sheets.");
+      toast("Sync Complete! Check Google Sheets.");
   }, (S.scans.length * 300) + 1000);
 }
 
+// =========================================================
+// RENDER & UI LOGIC
+// =========================================================
 function getGroupedHtml(scanArray) {
   if (scanArray.length === 0) {
-    return `<div id="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 15h6"/></svg>Tiada imbasan direkodkan</div>`;
+    return `<div id="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 15h6"/></svg>No scans recorded</div>`;
   }
   const groups = {};
   scanArray.forEach(s => {
@@ -402,7 +414,7 @@ function renderGroupedLists() {
   const todayDateStr = todayStr();
   const todayScansArr = S.scans.filter(s => s.date === todayDateStr);
   
-  document.getElementById('scan-total').textContent = `${todayScansArr.length} scan`;
+  document.getElementById('scan-total').textContent = `${todayScansArr.length} scan${todayScansArr.length !== 1 ? 's' : ''}`;
   document.getElementById('scan-groups-container').innerHTML = getGroupedHtml(todayScansArr);
   
   const historyDateInput = document.getElementById('history-date').value || todayDateStr;
