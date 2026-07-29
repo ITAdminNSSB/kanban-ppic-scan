@@ -141,7 +141,6 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
     <div class="history-header">
       <div class="history-title-row">
         <div class="history-title">Scan History</div>
-        <!-- SYNC BUTTON ADDED HERE -->
         <button class="sync-btn" onclick="syncAllToSheets()">SYNC TO SHEETS</button>
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
@@ -167,9 +166,9 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 
 <script>
 // =========================================================
-// YOUR ACTUAL LIVE URL IS HARDCODED HERE 
+// 🔴 TAMPAL URL WEB APP DARI SHEET BARU KAU KAT SINI 🔴
 // =========================================================
-const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEgfRX889rQXPM4DFP3VNnc4DYFzV6iDewoE2MFbArOM_QA2Q-bgfiKU1WUAK9kExwzg/exec"; 
+const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkEHeJpRcNGjur2LfvXL8okzJuZIzCbjzd6NokS3EHhqrAOItyCyhyP1EkNlUzwxzjeg/exec"; 
 
 const MODEL_COLORS=['#0969DA','#1A7F37','#9A3412','#92400E','#6D28D9','#0E7490','#BE185D','#B45309'];
 let S={scans:[], modelColors:{}, colorIdx:0, operatorId:''};
@@ -215,7 +214,7 @@ function checkLogin() {
 
 function submitLogin() {
   const val = document.getElementById('op-id-login').value.trim();
-  if (!val) { toast('Please enter an ID'); return; }
+  if (!val) { toast('Sila masukkan ID'); return; }
   S.operatorId = val;
   save();
   document.getElementById('op-id-login').value = '';
@@ -262,7 +261,7 @@ function submitManual() {
     document.getElementById('manual-input').value = '';
     keepFocus();
   } else if (!val) {
-    toast('Please enter a value');
+    toast('Sila masukkan maklumat');
   }
 }
 
@@ -318,10 +317,10 @@ function handleScan(raw){
 }
 
 // =========================================================
-// SEND DATA TO SHEET
+// HANTAR DATA KE GOOGLE SHEETS
 // =========================================================
 function postToSheet(entry) {
-  if (!GOOGLE_APPS_SCRIPT_URL) return;
+  if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbzkEHeJpRcNGjur2LfvXL8okzJuZIzCbjzd6NokS3EHhqrAOItyCyhyP1EkNlUzwxzjeg/exec") return;
   
   const category = entry.model.length >= 4 ? entry.model.substring(0, 4).toUpperCase() : entry.model.toUpperCase();
   
@@ -338,31 +337,30 @@ function postToSheet(entry) {
 }
 
 // =========================================================
-// SYNC OLD SCANS BUTTON FUNCTION
+// FUNGSI BUTANG SYNC
 // =========================================================
 function syncAllToSheets() {
-  toast("Tengah hantar data ke Google Sheets...");
+  toast("Hantar data ke Sheets...");
   
   if (S.scans.length === 0) {
-      setTimeout(() => toast("Tiada data untuk di hantar."), 1000);
+      setTimeout(() => toast("Tiada rekod untuk dihantar."), 1000);
       return;
   }
 
-  // Loop every single scan and fire it off to the sheet
   S.scans.forEach((entry, index) => {
       setTimeout(() => {
           postToSheet(entry);
-      }, index * 300); // Wait 300ms between each one so Google doesn't block it
+      }, index * 300); 
   });
 
   setTimeout(() => {
-      toast("Selesai! Buka Google Sheets sekarang.");
+      toast("Siap! Check Google Sheets.");
   }, (S.scans.length * 300) + 1000);
 }
 
 function getGroupedHtml(scanArray) {
   if (scanArray.length === 0) {
-    return `<div id="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 15h6"/></svg>No scans recorded</div>`;
+    return `<div id="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 15h6"/></svg>Tiada imbasan direkodkan</div>`;
   }
   const groups = {};
   scanArray.forEach(s => {
@@ -404,7 +402,7 @@ function renderGroupedLists() {
   const todayDateStr = todayStr();
   const todayScansArr = S.scans.filter(s => s.date === todayDateStr);
   
-  document.getElementById('scan-total').textContent = `${todayScansArr.length} scan${todayScansArr.length !== 1 ? 's' : ''}`;
+  document.getElementById('scan-total').textContent = `${todayScansArr.length} scan`;
   document.getElementById('scan-groups-container').innerHTML = getGroupedHtml(todayScansArr);
   
   const historyDateInput = document.getElementById('history-date').value || todayDateStr;
