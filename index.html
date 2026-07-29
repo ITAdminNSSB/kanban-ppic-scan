@@ -323,22 +323,23 @@ function postToSheet(entry) {
     return;
   }
   
-  const category = entry.model.length >= 4 ? entry.model.substring(0, 4).toUpperCase() : entry.model.toUpperCase();
-  
+  // Create payload for the newly modified Apps Script (ID & Sebango only)
   const payload = {
-    personId: entry.operatorId,
-    category: category,
-    partsList: entry.model 
+    id: entry.operatorId,
+    sebango: entry.model 
   };
   
+  // "mode: 'no-cors'" is required to bypass browser security policies 
+  // when POSTing directly from a webpage to Google Apps Script.
   fetch(GOOGLE_APPS_SCRIPT_URL, {
     method: 'POST',
+    mode: 'no-cors',
     body: JSON.stringify(payload),
     headers: {
       'Content-Type': 'text/plain;charset=utf-8'
     }
   })
-  .then(response => console.log("Sent successfully!"))
+  .then(() => console.log("Sent successfully!"))
   .catch(e => console.error("Sync error: ", e));
 }
 
