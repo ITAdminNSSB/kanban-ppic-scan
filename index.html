@@ -165,7 +165,6 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 // =========================================================
 // GOOGLE APPS SCRIPT URL
 // =========================================================
-// REPLACE THIS WITH YOUR NEW GOOGLE APPS SCRIPT URL IF IT CHANGED
 const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwqNAICMNWriAbWcP7d4YU9SYXIaWnJDH4uiunCF2KQzL6FnRQOF3lJ1_AR1qqCHEdoaA/exec"; 
 
 const MODEL_COLORS=['#0969DA','#1A7F37','#9A3412','#92400E','#6D28D9','#0E7490','#BE185D','#B45309'];
@@ -316,27 +315,23 @@ function handleScan(raw){
 }
 
 // =========================================================
-// SEND DATA TO SHEET (LIVE) - FIX IMPLEMENTED HERE
+// SEND DATA TO SHEET (LIVE) - JSON TEXT/PLAIN FIX
 // =========================================================
 function postToSheet(entry) {
-  if (!GOOGLE_APPS_SCRIPT_URL) {
-    console.error("Missing Apps Script URL!");
-    return;
-  }
+  if (!GOOGLE_APPS_SCRIPT_URL) return;
   
-  // Create URLSearchParams format instead of JSON. 
-  // This perfectly mimics a standard HTML form submission, completely bypassing Google's CORS block!
-  const formData = new URLSearchParams();
-  formData.append('id', entry.operatorId);
-  formData.append('sebango', entry.model);
+  var payload = JSON.stringify({
+    id: entry.operatorId,
+    sebango: entry.model
+  });
   
   fetch(GOOGLE_APPS_SCRIPT_URL, {
     method: 'POST',
-    mode: 'no-cors', // Tells browser to fire-and-forget without requiring permission checks
+    mode: 'no-cors', // Bypasses CORS checks securely
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
+      'Content-Type': 'text/plain;charset=utf-8'
     },
-    body: formData
+    body: payload
   })
   .then(() => console.log("Live Sync Triggered!"))
   .catch(e => console.error("Sync error: ", e));
