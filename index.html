@@ -167,7 +167,7 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 
 <script>
 // =========================================================
-// PASTE YOUR NEW WEB APP URL HERE
+// GOOGLE APPS SCRIPT URL
 // =========================================================
 const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwqNAICMNWriAbWcP7d4YU9SYXIaWnJDH4uiunCF2KQzL6FnRQOF3lJ1_AR1qqCHEdoaA/exec"; 
 
@@ -303,8 +303,6 @@ function handleScan(raw){
   save();
   renderGroupedLists();
   
-  postToSheet(entry);
-
   document.getElementById('flash-model').textContent=model;
   document.getElementById('flash').classList.add('show');
   document.getElementById('scan-icon-wrap').classList.add('active');
@@ -318,7 +316,7 @@ function handleScan(raw){
 }
 
 // =========================================================
-// SEND DATA TO SHEET 
+// SEND DATA TO SHEET (UPDATED TO FIX TEXT ALIGNMENT)
 // =========================================================
 function postToSheet(entry) {
   if (!GOOGLE_APPS_SCRIPT_URL) {
@@ -331,10 +329,10 @@ function postToSheet(entry) {
   const payload = {
     personId: entry.operatorId,
     category: category,
-    partsList: entry.model
+    // Add an apostrophe (') so Google Sheets stops treating parts like "1111-09" as dates
+    partsList: "'" + entry.model 
   };
   
-  // Sends a text/plain POST request, bypassing CORS blocks
   fetch(GOOGLE_APPS_SCRIPT_URL, {
     method: 'POST',
     body: JSON.stringify(payload),
@@ -347,25 +345,35 @@ function postToSheet(entry) {
 }
 
 // =========================================================
-// SYNC ALL (BUTTON) FUNCTION
+// SYNC ALL (BUTTON) FUNCTION (UPDATED TO SORT BY CATEGORY)
 // =========================================================
 function syncAllToSheets() {
-  toast("Sending data to Google Sheets...");
+  toast("Organizing and sending to Sheets...");
   
   if (S.scans.length === 0) {
       setTimeout(() => toast("No data to send."), 1000);
       return;
   }
 
-  S.scans.forEach((entry, index) => {
+  // First, group/sort all scans by their Category so they appear perfectly organized in the sheet
+  const sortedScans = [...S.scans].sort((a, b) => {
+    const catA = a.model.length >= 4 ? a.model.substring(0, 4).toUpperCase() : a.model.toUpperCase();
+    const catB = b.model.length >= 4 ? b.model.substring(0, 4).toUpperCase() : b.model.toUpperCase();
+    if (catA < catB) return -1;
+    if (catA > catB) return 1;
+    return a.time.localeCompare(b.time); // If categories are the same, order by scan time
+  });
+
+  // Send the sorted data
+  sortedScans.forEach((entry, index) => {
       setTimeout(() => {
           postToSheet(entry);
-      }, index * 300); // 300ms delay prevents Google from rate-limiting the requests
+      }, index * 300); // 300ms delay prevents rate limiting
   });
 
   setTimeout(() => {
       toast("Sync Complete! Check Google Sheets.");
-  }, (S.scans.length * 300) + 1000);
+  }, (sortedScans.length * 300) + 1000);
 }
 
 // =========================================================
