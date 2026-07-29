@@ -13,9 +13,6 @@
 }
 html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden}
 
-/* =========================================
-   PAGE 1: LOGIN SCREEN
-========================================= */
 #login-screen{display:flex;position:fixed;inset:0;background:var(--bg);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
 #login-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:32px 24px;width:100%;max-width:360px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.05);}
 .login-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;}
@@ -25,9 +22,6 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 .login-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:6px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;}
 .login-btn:active{opacity:0.9;}
 
-/* =========================================
-   PAGE 2: MAIN APP
-========================================= */
 #app-container{display:none; height:100%; flex-direction:column;}
 #op-bar{background:var(--surface);padding:12px 16px;display:flex;justify-content:space-between;align-items:center; flex-shrink:0;}
 #op-bar-label{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;}
@@ -96,7 +90,6 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
 <div id="login-screen" style="display:flex;">
   <div id="login-card">
     <div class="login-title">Operator Login</div>
@@ -106,7 +99,6 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
   </div>
 </div>
 
-<!-- MAIN APP -->
 <div id="app-container" style="display:none;">
   <div id="op-bar">
     <div id="op-bar-label">OPERATOR: <span id="op-bar-id">---</span></div>
@@ -167,9 +159,9 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 
 <script>
 // =========================================================
-// I HAVE REPLACED YOUR ACTUAL SCRIPT URL HERE
+// 🚨 PASTE YOUR DEPLOYED WEB APP URL HERE 🚨
 // =========================================================
-const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEgfRX889rQXPM4DFP3VNnc4DYFzV6iDewoE2MFbArOM_QA2Q-bgfiKU1WUAK9kExwzg/exec"; 
+const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz5e8f2Iw8YPVIn0YQF3CNPlsm2LyxIDQrq_WoK5FIHE5OrVkRNlOO-XHDMJVBVL6b7/exec"; 
 
 const MODEL_COLORS=['#0969DA','#1A7F37','#9A3412','#92400E','#6D28D9','#0E7490','#BE185D','#B45309'];
 let S={scans:[], modelColors:{}, colorIdx:0, operatorId:''};
@@ -318,18 +310,16 @@ function handleScan(raw){
 }
 
 // =========================================================
-// BULLETPROOF FETCH CALL
+// SEND DATA TO SHEET
 // =========================================================
 function postToSheet(entry) {
-  if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === "PASTE_YOUR_NEW_WEB_APP_URL_HERE") {
-    toast("Error: No Script URL");
+  if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbz5e8f2Iw8YPVIn0YQF3CNPlsm2LyxIDQrq_WoK5FIHE5OrVkRNlOO-XHDMJVBVL6b7/exec") {
+    toast("Error: Missing Web App URL in code!");
     return;
   }
   
-  // Create Category (first 4 characters or full name)
   const category = entry.model.length >= 4 ? entry.model.substring(0, 4).toUpperCase() : entry.model.toUpperCase();
   
-  // Prepare URL string parameters explicitly requested
   const params = new URLSearchParams({
     personId: entry.operatorId,
     category: category,
@@ -338,12 +328,8 @@ function postToSheet(entry) {
   
   const finalUrl = GOOGLE_APPS_SCRIPT_URL + "?" + params.toString();
   
-  // Make the network call
   fetch(finalUrl, { method: 'GET', mode: 'no-cors' })
-    .catch(e => {
-        console.error("Sync error: ", e);
-        toast("Network Error: Could not sync");
-    });
+    .catch(e => { console.error("Sync error: ", e); });
 }
 
 function getGroupedHtml(scanArray) {
@@ -417,7 +403,6 @@ function showScreen(name){
 let toastT;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2200);}
 
-// Boot Sequence
 load();
 renderGroupedLists();
 checkLogin();
