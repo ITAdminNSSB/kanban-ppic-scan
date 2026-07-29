@@ -1,424 +1,321 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Kanban QR Scan</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{
-  --bg:#F6F8FA;--surface:#FFFFFF;--border:#D0D7DE;--text:#1F2328;
-  --muted:#656D76;--accent:#0969DA;--green:#1A7F37;--red:#CF222E;--radius:10px;
-}
-html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden}
-
-#login-screen{display:flex;position:fixed;inset:0;background:var(--bg);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
-#login-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:32px 24px;width:100%;max-width:360px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.05);}
-.login-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;}
-.login-sub{font-size:12px;color:var(--muted);margin-bottom:24px;}
-.login-inp{width:100%;background:var(--surface);border:1px solid var(--accent);border-radius:6px;padding:12px;font-family:'JetBrains Mono',monospace;font-size:14px;text-align:center;outline:none;margin-bottom:16px;color:var(--text); transition:box-shadow .2s;}
-.login-inp:focus{box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);}
-.login-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:6px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;}
-.login-btn:active{opacity:0.9;}
-
-#app-container{display:none; height:100%; flex-direction:column;}
-#op-bar{background:var(--surface);padding:12px 16px;display:flex;justify-content:space-between;align-items:center; flex-shrink:0;}
-#op-bar-label{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;}
-#op-bar-id{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--accent);margin-left:6px;}
-#op-bar-change{font-size:12px;color:var(--accent);font-weight:500;cursor:pointer;background:none;border:none;}
-.screen{display:none; flex:1; overflow-y:auto; padding-bottom:calc(70px + env(safe-area-inset-bottom));}
-.screen.active{display:block;}
-#scan-main{padding:16px; max-width:600px; margin:0 auto; width:100%; display:flex; flex-direction:column; gap:16px;}
-#scan-icon-wrap{
-  border-radius:12px;background:var(--surface);border:2px dashed var(--border);
-  display:flex;flex-direction:row;align-items:center;justify-content:center;gap:14px;
-  padding:20px; transition:all .2s; position:relative; overflow:hidden;
-}
-#scan-icon-wrap.active{border-color:var(--accent);border-style:solid;background:#EBF3FF}
-#scan-icon-wrap svg{width:28px;height:28px;color:var(--border);transition:color .2s;flex-shrink:0}
-#scan-icon-wrap.active svg{color:var(--accent)}
-#scan-ready-text{font-size:14px;color:var(--text);font-weight:600;text-align:left;line-height:1.4}
-#scan-ready-text span{font-size:12px;font-weight:400;color:var(--muted)}
-#scan-icon-wrap.active #scan-ready-text{color:var(--accent)}
-#scan-icon-wrap.active #scan-ready-text span{color:var(--accent)}
-.manual-wrap { display:flex; gap:8px;}
-.manual-inp { flex:1; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px 14px; font-family:'JetBrains Mono',monospace; font-size:13px; outline:none; transition:border-color .2s; }
-.manual-inp:focus { border-color:var(--accent); }
-.manual-btn { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:0 24px; font-size:14px; font-weight:600; cursor:pointer; }
-.manual-btn:active { opacity:0.9; }
-.list-header{display:flex;align-items:center;justify-content:space-between;padding:8px 0 4px;}
-.list-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
-.list-total{font-size:12px;font-weight:700;color:var(--accent)}
-.group-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
-.group-head{padding:12px 16px;display:flex;align-items:center;gap:10px;background:var(--surface);}
-.group-badge{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.group-name{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;flex:1;color:var(--accent);}
-.group-count{background:#EBF3FF;color:var(--accent);border-radius:12px;padding:2px 8px;font-size:11px;font-weight:700}
-.group-rows{border-top:1px solid var(--border)}
-.scan-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);background:#FAFAFA;}
-.scan-row:last-child{border-bottom:none}
-.scan-row-left{display:flex;flex-direction:column;gap:4px;}
-.scan-row-model{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px; color:var(--text);}
-.scan-row-meta{display:flex; gap:10px; align-items:center;}
-.scan-row-time{font-size:11px;font-weight:500;color:var(--muted);font-family:'JetBrains Mono',monospace;}
-.scan-row-op{font-size:10px;color:var(--muted);font-weight:500;text-transform:uppercase;}
-#scanner-input{position:absolute;opacity:0;width:1px;height:1px;top:-999px;}
-#flash{
-  position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(255,255,255,.97);opacity:0;pointer-events:none;transition:opacity .15s;z-index:9000;gap:6px;
-}
-#flash.show{opacity:1}
-#flash-model{font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:700;color:var(--accent);text-align:center;padding:0 24px;line-height:1.2;word-break:break-all}
-#flash-ok{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:15px;font-weight:600;color:var(--green)}
-#flash-ok svg{width:24px;height:24px}
-.history-header{padding:16px;border-bottom:1px solid var(--border);background:var(--surface)}
-.history-title-row{display:flex;justify-content:space-between;align-items:center;}
-.history-title{font-size:18px;font-weight:600}
-.history-date-picker{padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);font-family:inherit;font-size:13px;color:var(--text);outline:none;cursor:pointer;}
-.history-sub{font-size:12px;color:var(--muted);margin-top:8px}
-.history-body{padding:16px;max-width:600px;margin:0 auto;width:100%;}
-#empty-state{text-align:center;color:var(--muted);font-size:14px;padding:48px 24px}
-#empty-state svg{width:40px;height:40px;opacity:.25;display:block;margin:0 auto 12px}
-#nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--surface);border-top:1px solid var(--border);z-index:100;height:calc(60px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none;border:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:11px;cursor:pointer;transition:color .15s}
-.nav-btn.active{color:var(--accent)}
-.nav-btn svg{width:20px;height:20px;stroke-width:2}
-#toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#1F2328;border:1px solid #444;border-radius:8px;padding:10px 18px;font-size:13px;color:#fff;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
-#toast.show{opacity:1}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production Scanner</title>
+    <style>
+*{ margin: 0; padding: 0; box-sizing: border-box; }
+body {font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);min-height: 100vh;color: white;}
+.header {background: rgba(255, 255, 255, 0.1);backdrop-filter: blur(20px);border-bottom: 1px solid rgba(255, 255, 255, 0.2);padding: 15px;display: flex;align-items: center;position: sticky;top: 0;z-index: 100;}
+.container {padding: 20px;max-width: 400px;margin: 0 auto;width: 100%;}
+.toggle-container {display: flex;background: rgba(0, 0, 0, 0.2);border-radius: 12px;padding: 5px;margin-bottom: 20px;}
+.toggle-btn {flex: 1;padding: 12px;border: none;background: transparent;color: rgba(255, 255, 255, 0.6);border-radius: 8px;font-size: 1rem;font-weight: bold;cursor: pointer;transition: all 0.3s ease;}
+.toggle-btn.active {background: rgba(255, 255, 255, 0.25);color: white;box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);}
+.glass-panel {background: rgba(255, 255, 255, 0.15);backdrop-filter: blur(20px);border: 1px solid rgba(255, 255, 255, 0.2);border-radius: 15px;padding: 15px;margin-bottom: 20px;box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);}
+.input-group { margin-bottom: 12px; }
+.glass-input, .glass-select, .glass-textarea {width: 100%;padding: 12px;background: rgba(255, 255, 255, 0.1);border: 1px solid rgba(255, 255, 255, 0.3);border-radius: 8px;color: white;font-size: 1rem;outline: none;}
+.glass-input::placeholder, .glass-textarea::placeholder { color: rgba(255, 255, 255, 0.6); }
+.glass-select option { background: #764ba2; color: white; }
+.glass-textarea { resize: vertical; min-height: 100px; font-family: inherit; }
+.side-by-side { display: flex; gap: 8px; align-items: center; }
+.side-by-side span { font-weight: bold; }
+.checkbox-grid {display: grid;grid-template-columns: 1fr 1fr;gap: 12px;margin-bottom: 10px;}
+.checkbox-label {display: flex;align-items: center;gap: 10px;font-size: 1rem;cursor: pointer;}
+.checkbox-label input[type="checkbox"] {width: 20px;height: 20px;accent-color: #48bb78;}
+.submit-btn {width: 100%;background: linear-gradient(135deg, rgba(72, 187, 120, 0.8), rgba(56, 178, 172, 0.8));border: 1px solid rgba(255, 255, 255, 0.4);border-radius: 12px;padding: 15px;color: white;font-size: 1.1rem;font-weight: bold;cursor: pointer;box-shadow: 0 4px 15px rgba(0,0,0,0.2);transition: transform 0.1s;}
+.submit-btn:active { transform: translateY(2px); }
+.submit-btn:disabled { background: rgba(255, 255, 255, 0.3); cursor: not-allowed; }
+.photo-label {display: block; margin-bottom: 8px; font-weight: bold;color: #ffe66d;font-size: 1.1rem;}
+    </style>
 </head>
 <body>
-
-<div id="login-screen" style="display:flex;">
-  <div id="login-card">
-    <div class="login-title">Operator Login</div>
-    <div class="login-sub">Please enter your ID number to begin</div>
-    <input type="text" id="op-id-login" class="login-inp" placeholder="Scan or type ID..." autocomplete="off">
-    <button class="login-btn" onclick="submitLogin()">Start Scanning</button>
-  </div>
-</div>
-
-<div id="app-container" style="display:none;">
-  <div id="op-bar">
-    <div id="op-bar-label">OPERATOR: <span id="op-bar-id">---</span></div>
-    <button id="op-bar-change" onclick="logout()">Change ID</button>
-  </div>
-  <div id="scan-screen" class="screen active">
-    <input id="scanner-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-    <div id="scan-main">
-      <div id="scan-icon-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/>
-          <rect x="7" y="7" width="4" height="4" rx="1"/>
-          <rect x="13" y="7" width="4" height="4" rx="1"/>
-          <rect x="7" y="13" width="4" height="4" rx="1"/>
-        </svg>
-        <div id="scan-ready-text">Scanner Active<br><span>Point at kanban QR</span></div>
-      </div>
-      <div class="manual-wrap">
-        <input type="text" id="manual-input" class="manual-inp" placeholder="Manual Entry..." autocomplete="off">
-        <button class="manual-btn" onclick="submitManual()">Add</button>
-      </div>
-      <div class="list-header">
-        <span class="list-title">TODAY'S SCANS</span>
-        <span class="list-total" id="scan-total">0 scans</span>
-      </div>
-      <div id="scan-groups-container"></div>
-    </div>
-    <div id="flash">
-      <div id="flash-model">—</div>
-      <div id="flash-ok">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-        Logged
-      </div>
-    </div>
-  </div>
-  
-  <div id="history-screen" class="screen">
-    <div class="history-header">
-      <div class="history-title-row">
-        <div class="history-title">Scan History</div>
-      </div>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-        <input type="date" id="history-date" class="history-date-picker">
-        <div class="history-sub" id="history-sub" style="margin-top:0;">Loading…</div>
-      </div>
-    </div>
-    <div class="history-body" id="history-body"></div>
-  </div>
-  
-  <nav id="nav">
-    <button class="nav-btn active" id="nav-scan" onclick="showScreen('scan')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="3" width="6" height="6" rx="1"/><rect x="3" y="15" width="6" height="6" rx="1"/><path d="M15 15h2v2h-2zM19 15h2v2h-2zM15 19h2v2h-2zM19 19h2v2h-2z"/></svg>
-      Scan
+    <header class="header">
+        <h1 id="pageTitle">Item Data Entry</h1>
+    </header>
+    <button onclick="window.location.href='prod_admin_user.html'" class="back-btn-custom" style="background: transparent; border: 2px solid #ffffff; border-radius: 8px; padding: 6px 12px; color: #ffffff; font-size: 16px; font-weight: bold; cursor: pointer; margin: 0 0 15px 20px; display: flex; align-items: center; gap: 8px; width: fit-content;">
+        <i class="fas fa-arrow-left"></i> <span data-translate="back">Back</span>
     </button>
-    <button class="nav-btn" id="nav-history" onclick="showScreen('history')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-      History
-    </button>
-  </nav>
-</div>
-<div id="toast"></div>
-
-<script>
-// =========================================================
-// GOOGLE APPS SCRIPT URL
-// =========================================================
-// REPLACE THIS WITH YOUR NEW GOOGLE APPS SCRIPT URL IF IT CHANGED
-const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiH8DPMwVAG7Oa7eOD4gYIxDpjGVZgUA4SVTJoHuVaU3mmNGHf_hTovDxFy3RjlEGyJA/exec"; 
-
-const MODEL_COLORS=['#0969DA','#1A7F37','#9A3412','#92400E','#6D28D9','#0E7490','#BE185D','#B45309'];
-let S={scans:[], modelColors:{}, colorIdx:0, operatorId:''};
-
-function save(){localStorage.setItem('kanban_s',JSON.stringify(S));}
-function load(){
-  try{
-    const d=JSON.parse(localStorage.getItem('kanban_s')||'{}');
-    S.scans = d.scans || [];
-    S.modelColors = d.modelColors || {};
-    S.colorIdx = d.colorIdx || 0;
-    S.operatorId = ''; 
-    document.getElementById('history-date').value = todayStr();
-  }catch(e){}
-}
-
-function colorFor(prefix){
-  if(!S.modelColors[prefix]){S.modelColors[prefix]=MODEL_COLORS[S.colorIdx%MODEL_COLORS.length];S.colorIdx++;save();}
-  return S.modelColors[prefix];
-}
-function todayStr(){
-  const d = new Date();
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().slice(0,10);
-}
-function timeStr(){
-  const d = new Date();
-  return d.toTimeString().slice(0,8);
-}
-
-function checkLogin() {
-  if (!S.operatorId) {
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('app-container').style.display = 'none';
-    setTimeout(() => document.getElementById('op-id-login').focus(), 100);
-  } else {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app-container').style.display = 'flex';
-    document.getElementById('op-bar-id').textContent = S.operatorId;
-    showScreen('scan');
-  }
-}
-
-function submitLogin() {
-  const val = document.getElementById('op-id-login').value.trim();
-  if (!val) { toast('Please enter an ID'); return; }
-  S.operatorId = val;
-  save();
-  document.getElementById('op-id-login').value = '';
-  checkLogin();
-}
-
-document.getElementById('op-id-login').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') submitLogin();
-});
-
-function logout() {
-  S.operatorId = '';
-  save();
-  checkLogin();
-}
-
-let scanBuffer='';
-let scanTimer=null;
-
-document.addEventListener('keydown', e => {
-  const tag = document.activeElement.tagName;
-  const id  = document.activeElement.id;
-  if ((tag==='INPUT'||tag==='TEXTAREA') && id!=='scanner-input' && id!=='op-id-login' && id!=='manual-input' && id!=='history-date') return;
-
-  if (e.key==='Enter' && id !== 'manual-input') {
-    clearTimeout(scanTimer);
-    const val = scanBuffer;
-    scanBuffer = '';
-    if (val.trim().length > 0 && S.operatorId) handleScan(val);
-    return;
-  }
-
-  if (e.key.length === 1 && id !== 'manual-input' && id !== 'op-id-login' && id !== 'history-date') {
-    scanBuffer += e.key;
-    clearTimeout(scanTimer);
-    scanTimer = setTimeout(() => { scanBuffer = ''; }, 300);
-  }
-});
-
-function submitManual() {
-  const val = document.getElementById('manual-input').value.trim();
-  if (val && S.operatorId) {
-    handleScan(val);
-    document.getElementById('manual-input').value = '';
-    keepFocus();
-  } else if (!val) {
-    toast('Please enter a value');
-  }
-}
-
-document.getElementById('manual-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') submitManual();
-});
-
-const scannerInput = document.getElementById('scanner-input');
-function keepFocus(){
-  if (!S.operatorId) return;
-  const id = document.activeElement.id;
-  if(id!=='scanner-input' && id!=='manual-input' && id!=='op-id-login' && id!=='history-date'){
-    scannerInput.focus();
-  }
-}
-document.addEventListener('click', ()=>setTimeout(keepFocus,50));
-document.addEventListener('touchend', ()=>setTimeout(keepFocus,50));
-
-let flashTimeout;
-let lastScanId='';
-
-function handleScan(raw){
-  if(raw===lastScanId && flashTimeout) return;
-  lastScanId=raw;
-
-  const model = raw.replace(/[\r\n\t]+/g, '').trim().toUpperCase();
-  if(!model) return;
-  
-  const entry={
-    scanId:'SC-'+Date.now(),
-    operatorId: S.operatorId,
-    model: model,
-    date: todayStr(),
-    time: timeStr()
-  };
-  
-  S.scans.push(entry);
-  save();
-  renderGroupedLists();
-  
-  // LIVE SYNC: Automatically pushes to the sheet
-  postToSheet(entry);
-  
-  document.getElementById('flash-model').textContent=model;
-  document.getElementById('flash').classList.add('show');
-  document.getElementById('scan-icon-wrap').classList.add('active');
-
-  clearTimeout(flashTimeout);
-  flashTimeout=setTimeout(()=>{
-    document.getElementById('flash').classList.remove('show');
-    document.getElementById('scan-icon-wrap').classList.remove('active');
-    lastScanId='';
-  },1200);
-}
-
-// =========================================================
-// SEND DATA TO SHEET (LIVE) - FIX IMPLEMENTED HERE
-// =========================================================
-function postToSheet(entry) {
-  if (!GOOGLE_APPS_SCRIPT_URL) {
-    console.error("Missing Apps Script URL!");
-    return;
-  }
-  
-  // Create URLSearchParams format instead of JSON. 
-  // This perfectly mimics a standard HTML form submission, completely bypassing Google's CORS block!
-  const formData = new URLSearchParams();
-  formData.append('id', entry.operatorId);
-  formData.append('sebango', entry.model);
-  
-  fetch(GOOGLE_APPS_SCRIPT_URL, {
-    method: 'POST',
-    mode: 'no-cors', // Tells browser to fire-and-forget without requiring permission checks
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: formData
-  })
-  .then(() => console.log("Live Sync Triggered!"))
-  .catch(e => console.error("Sync error: ", e));
-}
-
-// =========================================================
-// RENDER & UI LOGIC
-// =========================================================
-function getGroupedHtml(scanArray) {
-  if (scanArray.length === 0) {
-    return `<div id="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 15h6"/></svg>No scans recorded</div>`;
-  }
-  const groups = {};
-  scanArray.forEach(s => {
-    const prefix = s.model.length >= 4 ? s.model.substring(0, 4).toUpperCase() : s.model.toUpperCase();
-    if(!groups[prefix]) groups[prefix] = [];
-    groups[prefix].push(s);
-  });
-  const sortedPrefixes = Object.keys(groups).sort((a, b) => a.localeCompare(b));
-  return sortedPrefixes.map(prefix => {
-    const rows = groups[prefix];
-    const col = colorFor(prefix);
-    const activeCount = rows.length;
-    rows.sort((a,b) => b.time.localeCompare(a.time));
-    const rowsHtml = rows.map(r => `
-      <div class="scan-row">
-        <div class="scan-row-left">
-          <span class="scan-row-model">${r.model}</span>
-          <div class="scan-row-meta">
-            <span class="scan-row-time">${r.time}</span>
-            <span class="scan-row-op">OP: ${r.operatorId}</span>
-          </div>
+    
+    <div class="container">
+        
+        <div class="toggle-container">
+            <button type="button" id="btnScan" class="toggle-btn active" onclick="switchMode('scan')">📷 Scan</button>
+            <button type="button" id="btnRemark" class="toggle-btn" onclick="switchMode('remark')">📝 Remark</button>
         </div>
-      </div>
-    `).join('');
-    return `
-      <div class="group-card">
-        <div class="group-head">
-          <div class="group-badge" style="background:${col}"></div>
-          <div class="group-name">Category: ${prefix}</div>
-          <span class="group-count">${activeCount}</span>
-        </div>
-        <div class="group-rows">${rowsHtml}</div>
-      </div>
-    `;
-  }).join('');
-}
 
-function renderGroupedLists() {
-  const todayDateStr = todayStr();
-  const todayScansArr = S.scans.filter(s => s.date === todayDateStr);
-  
-  document.getElementById('scan-total').textContent = `${todayScansArr.length} scan${todayScansArr.length !== 1 ? 's' : ''}`;
-  document.getElementById('scan-groups-container').innerHTML = getGroupedHtml(todayScansArr);
-  
-  const historyDateInput = document.getElementById('history-date').value || todayDateStr;
-  const historyScansArr = S.scans.filter(s => s.date === historyDateInput);
-  const dObj = new Date(historyDateInput.replace(/-/g, '\/')); 
-  const dateStrPretty = dObj.toLocaleDateString('en-MY', {weekday:'short', day:'numeric', month:'short', year:'numeric'});
-  
-  document.getElementById('history-sub').textContent = `${dateStrPretty}  ·  ${historyScansArr.length} scans`;
-  document.getElementById('history-body').innerHTML = getGroupedHtml(historyScansArr);
-}
+        <form id="scannerForm">
 
-document.getElementById('history-date').addEventListener('change', renderGroupedLists);
+            <div class="glass-panel" style="padding-bottom: 5px;">
+                <div class="input-group">
+                    <input type="text" id="picName" class="glass-input" placeholder="PIC Name" required>
+                </div>
+            </div>
 
-function showScreen(name){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  const scr = document.getElementById(name+'-screen');
-  const btn = document.getElementById('nav-' + name);
-  if(scr) scr.classList.add('active');
-  if(btn) btn.classList.add('active');
-  if(name === 'scan') setTimeout(() => keepFocus(), 100);
-}
+            <div id="scanView">
+                <div class="glass-panel">
+                    <div class="input-group">
+                        <select id="lineName" class="glass-select" required>
+                            <option value="" disabled selected>Select Line Name</option>
+                            <option value="R/F 1-1">R/F 1-1</option>
+                            <option value="R/F 1-2">R/F 1-2</option>
+                            <option value="R/F 1-3">R/F 1-3</option>
+                            <option value="R/F 1-4">R/F 1-4</option>
+                            <option value="R/F 1-5">R/F 1-5</option>
+                            <option value="R/F 1-6">R/F 1-6</option>
+                            <option value="R/F 1-7">R/F 1-7</option>
+                        </select>
+                    </div>
 
-let toastT;
-function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2200);}
+                    <div class="input-group">
+                        <input type="text" id="sebangou" class="glass-input" placeholder="Sebangou" required>
+                    </div>
 
-load();
-renderGroupedLists();
-checkLogin();
-</script>
+                    <div class="spec-group input-group side-by-side">
+                        <select id="materialspec" class="glass-select" style="flex: 2; min-width: 0;" required>
+                            <option id="optMaterial" value="" disabled selected>Material Spec</option>
+                            <option value="SPH">SPH</option>
+                            <option value="SPC">SPC</option>
+                            <option value="SCGA">SCGA</option>
+                            <option value="SHGA">SHGA</option>
+                            <option value="SPHC">SPHC</option>
+                            <option value="SPCC">SPCC</option> 
+                        </select>
+                        <input type="text" id="materialSpecDetails" class="glass-input" placeholder="Spec Details" style="flex: 1.5; min-width: 0;" required>
+                    </div>
+                    
+                    <div class="input-group side-by-side" >
+                        <input type="number" id="size1" class="glass-input" placeholder="Thickness" step="any" style="flex: 1.5; min-width: 0; padding: 12px 5px; text-align: center;" required>
+                        <span>x</span>
+                        <input type="number" id="size2" class="glass-input" placeholder="Length" step="any" style="flex: 1.2; min-width: 0; padding: 12px 5px; text-align: center;" required>
+                        <span>x</span>
+                        <select id="sizeType" class="glass-select" style="flex: 1.5; min-width: 0; padding: 12px 2px; text-align: center; cursor: pointer;" required>
+                            <option value="C">Coil</option>
+                            <option value="L">Length</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="number" id="pitch" class="glass-input" placeholder="Pitch" step="any" required>
+                    </div>
+                </div>
+
+                <div class="glass-panel" style="background: rgba(0,0,0,0.3); border-color: #ffe66d;">
+                    <label for="photoFile" class="photo-label">📸 Snap Sticker Photo Proof</label>
+                    <input type="file" id="photoFile" accept="image/*" capture="environment" required style="color: white; width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px;">
+                </div>
+            </div>
+
+            <div id="remarkView" style="display: none;">
+                <div class="glass-panel">
+                    <label style="display: block; margin-bottom: 12px; font-weight: bold; color: #ffe66d;">Select Affected Line(s):</label>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-label"><input type="checkbox" name="remarkLine" value="R/F 1-1"> R/F 1-1</label>
+                        <label class="checkbox-label"><input type="checkbox" name="remarkLine" value="R/F 1-2"> R/F 1-2</label>
+                        <label class="checkbox-label"><input type="checkbox" name="remarkLine" value="R/F 1-3"> R/F 1-3</label>
+                        <label class="checkbox-label"><input type="checkbox" name="remarkLine" value="R/F 1-4"> R/F 1-4</label>
+                        <label class="checkbox-label"><input type="checkbox" name="remarkLine" value="R/F 1-5"> R/F 1-5</label>
+                        <label class="checkbox-label"><input type="checkbox" name="remarkLine" value="R/F 1-6"> R/F 1-6</label>
+                        <label class="checkbox-label"><input type="checkbox" name="remarkLine" value="R/F 1-7"> R/F 1-7</label>
+                    </div>
+                </div>
+
+                <div class="glass-panel">
+                    <label style="display: block; margin-bottom: 8px; font-weight: bold;">Reason for Remark:</label>
+                    <textarea id="remarkReason" class="glass-textarea" placeholder="E.g., Machine breakdown, waiting for material..." required disabled></textarea>
+                </div>
+            </div>
+
+            <button type="button" id="saveBtn" class="submit-btn" onclick="processAndSend()">
+                💾 Save to Google Sheets
+            </button>
+
+        </form>
+    </div>
+
+    <script>
+    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbwrjJENFvrD1VchToVQPPrC7G7Rjs9zNphoPICOW5DSq4dGaGbIQLFuIWtCrl_X50-7qA/exec"; 
+    let currentMode = 'scan'; 
+
+    window.onload = function() {
+        let savedName = localStorage.getItem("loggedInPIC");
+        let picInput = document.getElementById("picName");
+        
+        if (savedName) {
+            picInput.value = savedName;
+            picInput.readOnly = true; 
+            picInput.style.backgroundColor = "rgba(0, 0, 0, 0.2)"; 
+            picInput.style.color = "#ccc";
+        }
+    };
+
+    function switchMode(mode) {
+        currentMode = mode;
+        
+        document.getElementById('btnScan').classList.toggle('active', mode === 'scan');
+        document.getElementById('btnRemark').classList.toggle('active', mode === 'remark');
+        document.getElementById('pageTitle').innerText = mode === 'scan' ? 'Item Data Entry' : 'Line Remark Entry';
+
+        const scanView = document.getElementById('scanView');
+        const remarkView = document.getElementById('remarkView');
+
+        if (mode === 'scan') {
+            scanView.style.display = 'block';
+            remarkView.style.display = 'none';
+            scanView.querySelectorAll('input, select').forEach(el => el.disabled = false);
+            remarkView.querySelectorAll('input, textarea').forEach(el => el.disabled = true);
+        } else {
+            scanView.style.display = 'none';
+            remarkView.style.display = 'block';
+            scanView.querySelectorAll('input, select').forEach(el => el.disabled = true);
+            remarkView.querySelectorAll('input, textarea').forEach(el => el.disabled = false);
+        }
+    }
+
+    function processAndSend() {
+        let form = document.getElementById("scannerForm");
+        
+        if (!form.reportValidity()) {
+            return; 
+        }
+
+        if (currentMode === 'remark') {
+            let checkboxes = document.querySelectorAll('input[name="remarkLine"]:checked');
+            if (checkboxes.length === 0) {
+                alert("Please select at least one Line for this remark!");
+                return;
+            }
+        }
+
+        let btn = document.getElementById("saveBtn");
+        btn.innerText = "⏳ Uploading...";
+        btn.disabled = true;
+
+        if (currentMode === 'scan') {
+            let fileInput = document.getElementById("photoFile");
+            let file = fileInput.files[0];
+
+            if (file) {
+                let img = new Image();
+                let reader = new FileReader();
+                reader.onloadend = function() {
+                    img.src = reader.result;
+                    img.onload = function() {
+                        let canvas = document.createElement("canvas");
+                        let maxSize = 500; 
+                        let scale = Math.min(maxSize / img.width, maxSize / img.height, 1);
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+                        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+                        let compressed = canvas.toDataURL("image/jpeg", 0.5).split(',')[1]; 
+                        
+                        let thickness = document.getElementById("size1").value;
+                        let length = document.getElementById("size2").value;
+                        let sizeType = document.getElementById("sizeType").value;
+                        let specBase = document.getElementById("materialspec").value;
+                        let specDetails = document.getElementById("materialSpecDetails").value;
+                        
+                        let payload = {
+                            lineName: document.getElementById("lineName").value,
+                            picName: document.getElementById("picName").value,
+                            sebangou: document.getElementById("sebangou").value, 
+                            materialSpec: `${specBase} - ${specDetails}`,
+                            materialThickness: thickness, 
+                            materialSize: `${thickness} x ${length} x ${sizeType}`, 
+                            pitch: document.getElementById("pitch").value,
+                            image: compressed,
+                            mimeType: "image/jpeg",
+                            fileName: file.name
+                        };
+                        
+                        executeFetch(payload);
+                    };
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert("Please attach a photo!");
+                resetFormState();
+            }
+
+        } else {
+            let checkboxes = document.querySelectorAll('input[name="remarkLine"]:checked');
+            let selectedLines = Array.from(checkboxes).map(cb => cb.value).join(', ');
+            let reasonText = document.getElementById("remarkReason").value;
+
+            let payload = {
+                lineName: selectedLines,
+                picName: document.getElementById("picName").value,
+                sebangou: "REMARK",                  
+                materialSpec: reasonText,            
+                materialThickness: "-",
+                materialSize: "-",
+                pitch: "-",
+                image: "",                           
+                mimeType: "",
+                fileName: ""
+            };
+
+            executeFetch(payload);
+        }
+    }
+
+    // ========================================================
+    // FIX: Using URLSearchParams & mode: 'no-cors' for Live Sync
+    // ========================================================
+    function executeFetch(payload) {
+        // Convert the JSON payload into a Form Data object
+        const formData = new URLSearchParams();
+        for (const key in payload) {
+            formData.append(key, payload[key]);
+        }
+
+        // Send with no-cors to bypass browser security stops
+        fetch(GOOGLE_URL, { 
+            method: "POST", 
+            mode: "no-cors",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: formData 
+        })
+        .then(() => {
+            // Note: Because of 'no-cors', the response is opaque. 
+            // We assume success if the fetch command finishes without a network error.
+            alert("Success: Data sent to Google Sheets!");
+            resetFormState();
+            
+            // Clear remark specific fields manually
+            document.querySelectorAll('input[name="remarkLine"]').forEach(cb => cb.checked = false);
+            document.getElementById("remarkReason").value = "";
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Error saving data. Check connection.");
+            resetFormState();
+        });
+    }
+
+    function resetFormState() {
+        const form = document.getElementById('scannerForm');
+        const picNameInput = document.getElementById('picName');
+        const savedPicName = picNameInput.value;
+
+        form.reset();
+        picNameInput.value = savedPicName; 
+
+        document.getElementById("lineName").value = "";
+        document.getElementById("sebangou").value = "";
+        document.getElementById("materialspec").value = ""; 
+        document.getElementById("size1").value = ""; 
+        document.getElementById("size2").value = ""; 
+        document.getElementById("sizeType").value = "C"; 
+        document.getElementById("pitch").value = "";
+        document.getElementById("photoFile").value = "";
+        
+        let btn = document.getElementById("saveBtn");
+        btn.innerText = "💾 Save to Google Sheets";
+        btn.disabled = false;
+    }
+    </script>
 </body>
 </html>
