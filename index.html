@@ -159,9 +159,13 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 
 <script>
 // =========================================================
-// 🚨 PASTE YOUR DEPLOYED WEB APP URL HERE 🚨
+// 🚨 PASTE YOUR NEW DEPLOYED WEB APP URL HERE 🚨
 // =========================================================
-const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz5e8f2Iw8YPVIn0YQF3CNPlsm2LyxIDQrq_WoK5FIHE5OrVkRNlOO-XHDMJVBVL6b7/exec"; 
+const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw7fymYNc6sC36jsVHF7qT7hChwM4SsZha7FIGg2-1C4oNJr2VBLZE6uJvbBUvRGRggXA/exec"; 
+
+if (GOOGLE_APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbw7fymYNc6sC36jsVHF7qT7hChwM4SsZha7FIGg2-1C4oNJr2VBLZE6uJvbBUvRGRggXA/exec") {
+    alert("STOP! You must paste your NEW Google Apps Script URL into the HTML code at line 181! The scanner will not work until you do.");
+}
 
 const MODEL_COLORS=['#0969DA','#1A7F37','#9A3412','#92400E','#6D28D9','#0E7490','#BE185D','#B45309'];
 let S={scans:[], modelColors:{}, colorIdx:0, operatorId:''};
@@ -313,10 +317,7 @@ function handleScan(raw){
 // SEND DATA TO SHEET
 // =========================================================
 function postToSheet(entry) {
-  if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbz5e8f2Iw8YPVIn0YQF3CNPlsm2LyxIDQrq_WoK5FIHE5OrVkRNlOO-XHDMJVBVL6b7/exec") {
-    toast("Error: Missing Web App URL in code!");
-    return;
-  }
+  if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbw7fymYNc6sC36jsVHF7qT7hChwM4SsZha7FIGg2-1C4oNJr2VBLZE6uJvbBUvRGRggXA/exec") return;
   
   const category = entry.model.length >= 4 ? entry.model.substring(0, 4).toUpperCase() : entry.model.toUpperCase();
   
