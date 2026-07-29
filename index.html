@@ -167,9 +167,9 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
 
 <script>
 // =========================================================
-// 🔴 PASTE YOUR NEW WEB APP URL HERE 🔴
+// PASTE YOUR NEW WEB APP URL HERE
 // =========================================================
-const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0p6Fna4r7XTXZKfUKV4nJL7B1trQUWs9gA3gS7Ww7MgmVUsXoB8th-uruWzeHLvmLDQ/exec"; 
+const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwqNAICMNWriAbWcP7d4YU9SYXIaWnJDH4uiunCF2KQzL6FnRQOF3lJ1_AR1qqCHEdoaA/exec"; 
 
 const MODEL_COLORS=['#0969DA','#1A7F37','#9A3412','#92400E','#6D28D9','#0E7490','#BE185D','#B45309'];
 let S={scans:[], modelColors:{}, colorIdx:0, operatorId:''};
@@ -318,10 +318,10 @@ function handleScan(raw){
 }
 
 // =========================================================
-// SEND DATA TO SHEET (NOW USING POST METHOD - CORS SAFE)
+// SEND DATA TO SHEET 
 // =========================================================
 function postToSheet(entry) {
-  if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbx0p6Fna4r7XTXZKfUKV4nJL7B1trQUWs9gA3gS7Ww7MgmVUsXoB8th-uruWzeHLvmLDQ/exec") {
+  if (!GOOGLE_APPS_SCRIPT_URL) {
     console.error("Missing Apps Script URL!");
     return;
   }
