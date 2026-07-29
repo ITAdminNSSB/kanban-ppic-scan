@@ -141,8 +141,8 @@ html,body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);font
     <div class="history-header">
       <div class="history-title-row">
         <div class="history-title">Scan History</div>
-        <!-- Manual Sync Button -->
-        <button class="sync-btn" onclick="syncAllToSheets()">SYNC TO SHEETS</button>
+        <!-- Manual Sync Button left here as a backup for batch processing -->
+        <button class="sync-btn" onclick="syncAllToSheets()">SYNC BATCH</button>
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
         <input type="date" id="history-date" class="history-date-picker">
@@ -303,6 +303,9 @@ function handleScan(raw){
   save();
   renderGroupedLists();
   
+  // LIVE SYNC: Automatically sends to Google Sheets on every successful scan
+  postToSheet(entry);
+  
   document.getElementById('flash-model').textContent=model;
   document.getElementById('flash').classList.add('show');
   document.getElementById('scan-icon-wrap').classList.add('active');
@@ -316,7 +319,7 @@ function handleScan(raw){
 }
 
 // =========================================================
-// SEND DATA TO SHEET (UPDATED TO FIX TEXT ALIGNMENT)
+// SEND DATA TO SHEET 
 // =========================================================
 function postToSheet(entry) {
   if (!GOOGLE_APPS_SCRIPT_URL) {
@@ -329,8 +332,7 @@ function postToSheet(entry) {
   const payload = {
     personId: entry.operatorId,
     category: category,
-    // Add an apostrophe (') so Google Sheets stops treating parts like "1111-09" as dates
-    partsList: "'" + entry.model 
+    partsList: entry.model // Passes clean string. The Google App Script will add the apostrophe.
   };
   
   fetch(GOOGLE_APPS_SCRIPT_URL, {
@@ -345,30 +347,28 @@ function postToSheet(entry) {
 }
 
 // =========================================================
-// SYNC ALL (BUTTON) FUNCTION (UPDATED TO SORT BY CATEGORY)
+// SYNC ALL (BUTTON) FUNCTION (Left as backup)
 // =========================================================
 function syncAllToSheets() {
-  toast("Organizing and sending to Sheets...");
+  toast("Organizing and sending batch to Sheets...");
   
   if (S.scans.length === 0) {
       setTimeout(() => toast("No data to send."), 1000);
       return;
   }
 
-  // First, group/sort all scans by their Category so they appear perfectly organized in the sheet
   const sortedScans = [...S.scans].sort((a, b) => {
     const catA = a.model.length >= 4 ? a.model.substring(0, 4).toUpperCase() : a.model.toUpperCase();
     const catB = b.model.length >= 4 ? b.model.substring(0, 4).toUpperCase() : b.model.toUpperCase();
     if (catA < catB) return -1;
     if (catA > catB) return 1;
-    return a.time.localeCompare(b.time); // If categories are the same, order by scan time
+    return a.time.localeCompare(b.time); 
   });
 
-  // Send the sorted data
   sortedScans.forEach((entry, index) => {
       setTimeout(() => {
           postToSheet(entry);
-      }, index * 300); // 300ms delay prevents rate limiting
+      }, index * 300); 
   });
 
   setTimeout(() => {
